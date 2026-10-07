@@ -11,7 +11,7 @@ describe('segment', () => {
   it('handles abbreviations gracefully (basic)', () => {
     // A more advanced splitter handles Mr. properly, but this basic regex tests current functionality
     const text = 'Mr. Smith went to Washington.';
-    expect(segment(text)).toContain('Mr.');
+    expect(segment(text)).toEqual(['Mr.  Smith went to Washington.']);
   });
 
   it('returns single string array for no punctuation', () => {

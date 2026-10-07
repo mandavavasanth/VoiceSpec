@@ -59,6 +59,15 @@ describe('checkIntegrity', () => {
 
   it('removes dangling references', () => {
     const spec = JSON.parse(JSON.stringify(mockSpec)) as unknown as Spec;
+    spec.acceptanceCriteria = [
+      {
+        id: 'AC-001',
+        requirementId: 'FR-nonexistent',
+        given: 'g',
+        when: 'w',
+        then: 't',
+      },
+    ];
     spec.tasks = [
       {
         id: 'T-001',
@@ -75,9 +84,14 @@ describe('checkIntegrity', () => {
     const warnings: string[] = [];
     const result = checkIntegrity(spec, warnings);
 
+    expect(result.acceptanceCriteria).toHaveLength(0);
     expect(result.tasks[0]?.requirementIds).toHaveLength(0);
     expect(result.tasks[0]?.dependsOn).toHaveLength(0);
     expect(warnings.some((w) => w.includes('Removed dangling'))).toBe(true);
+    // Specifically check AC warning
+    expect(
+      warnings.some((w) => w.includes('Removed AC AC-001 due to dangling requirementId')),
+    ).toBe(true);
   });
 
   it('detects and removes cyclic dependencies', () => {

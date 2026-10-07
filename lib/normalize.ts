@@ -9,9 +9,9 @@ export function normalize(raw: string): string {
   const fillers = /\b(um|uh|you know|like|I mean)\b/gi;
   cleaned = cleaned.replace(fillers, '');
 
-  // Remove immediate repetitions (e.g., "the the", "we we")
-  const repetitions = /\b(\w+)\s+\1\b/gi;
-  cleaned = cleaned.replace(repetitions, '$1');
+  // Remove immediate repetitions (e.g., "the the", "हम हम"), using Unicode property \p{L}
+  const repetitions = /(^|\s)([^\s\p{P}]+)\s+\2(?=\s|$|\p{P})/giu;
+  cleaned = cleaned.replace(repetitions, '$1$2');
 
   // Clean up extra whitespace left behind
   cleaned = cleaned.replace(/\s{2,}/g, ' ');

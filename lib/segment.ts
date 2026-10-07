@@ -5,19 +5,35 @@
 export function segment(text: string): string[] {
   if (!text.trim()) return [];
 
-  // Match sentences based on punctuation (. ! ?) followed by whitespace or end of string.
-  // Uses positive lookbehind for punctuation to keep it attached to the sentence.
-  // Note: JavaScript regex doesn't support arbitrary length lookbehinds, so we use a simpler split strategy.
+  // Match abbreviations we don't want to split on.
+  const abbrRegex = /\b(Mr|Mrs|Ms|Dr|Prof|Rev|Capt|St|Inc|Ltd|Jr|Sr|vs|etc)\.\s*$/i;
 
-  // Split on punctuation followed by space and capital letter, or end of string.
-  // We use a capture group to keep the punctuation.
-  const regex = /([^.?!]+[.?!]+(?=\s|$))/g;
+  const sentences: string[] = [];
+  let currentSentence = '';
+
+  // Split on punctuation (. ! ? । ॥) followed by space or end of string.
+  const regex = /([^.?!।॥]+[.?!।॥]+(?=\s|$))/g;
   const matches = text.match(regex);
 
   if (!matches) {
-    // If no punctuation found, treat the whole text as one sentence.
     return [text.trim()];
   }
 
-  return matches.map((s) => s.trim()).filter((s) => s.length > 0);
+  for (let i = 0; i < matches.length; i++) {
+    const part = matches[i] || '';
+    currentSentence += part;
+    if (abbrRegex.test(currentSentence) && i < matches.length - 1) {
+      // It's an abbreviation, keep accumulating
+      currentSentence += ' ';
+    } else {
+      sentences.push(currentSentence.trim());
+      currentSentence = '';
+    }
+  }
+
+  if (currentSentence.trim()) {
+    sentences.push(currentSentence.trim());
+  }
+
+  return sentences.filter((s) => s.length > 0);
 }
