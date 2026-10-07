@@ -33,5 +33,14 @@ describe('fallbackSpec', () => {
     // Evidence attached
     expect(spec.requirements[0]?.evidence[0]?.sentenceIndex).toBe(0);
     expect(spec.requirements[0]?.evidence[0]?.quote).toBe(sentences[0]);
+
+    // Test cue-word classifications
+    expect(spec.userStories[0]?.evidence[0]?.sentenceIndex).toBe(1);
+    expect(spec.userStories[0]?.evidence[0]?.quote).toBe(sentences[1]);
+    expect(spec.risks[0]?.evidence[0]?.sentenceIndex).toBe(2);
+    expect(spec.risks[0]?.evidence[0]?.quote).toBe(sentences[2]);
+
+    // Explicitly test reason code formats
+    expect(warnings.some((w) => w.includes('Fallback mode activated. Reason: timeout'))).toBe(true);
   });
 });

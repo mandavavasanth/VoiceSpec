@@ -67,9 +67,9 @@ export class GeminiClient implements IGeminiClient {
       responseMimeType: 'application/json',
       responseSchema: jsonSchema,
       maxOutputTokens: 8192,
-      // In @google/genai thinking is configured via tools or system config if supported,
-      // but typically we just rely on standard parameters for 3.8-flash.
       temperature: 0.2, // Low temp for more deterministic parsing
+      // Explicitly pass thinking budget for advanced reasoning models
+      thinkingConfig: { thinkingBudgetTokens: 2048 },
     };
 
     const runAttempt = async (currentPrompt: string): Promise<string> => {
@@ -87,6 +87,7 @@ export class GeminiClient implements IGeminiClient {
           this.ai.models.generateContent({
             model: this.modelName,
             contents: currentPrompt,
+            // @ts-expect-error SDK may not have thinkingConfig yet
             config,
           }),
           timeoutPromise,
@@ -106,7 +107,9 @@ export class GeminiClient implements IGeminiClient {
         const status =
           errorObj['status'] ||
           (errorObj['response'] as Record<string, unknown> | undefined)?.['status'];
-        if (status === 401 || status === 403)
+        const message =
+          typeof errorObj['message'] === 'string' ? errorObj['message'].toLowerCase() : '';
+        if (status === 401 || status === 403 || message.includes('api key not valid'))
           throw new GeminiError('auth', 'Authentication failed');
         if (status === 429) throw new GeminiError('rate-limit', 'Rate limited');
 

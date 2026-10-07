@@ -18,4 +18,9 @@ describe('normalize', () => {
     const raw = 'Important requirement: system must be fast.';
     expect(normalize(raw)).toBe(raw);
   });
+
+  it('preserves non-English text and removes repetitions using Unicode boundaries', () => {
+    const raw = 'यह यह एक परीक्षण परीक्षण है';
+    expect(normalize(raw)).toBe('यह एक परीक्षण है');
+  });
 });
