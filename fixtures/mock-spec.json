@@ -1,0 +1,65 @@
+{
+  "title": "GitHub Export Feature",
+  "summary": "System for exporting generated specs to GitHub issues.",
+  "problem": "Currently no way to turn a spec into actionable issues in the tracker.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "persona": "product manager",
+      "want": "to click a button",
+      "soThat": "it makes issues",
+      "evidence": [
+        {
+          "sentenceIndex": 1,
+          "quote": "As a product manager I want to click a button so that it makes issues."
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "FR-001",
+      "text": "The API must be rate limited.",
+      "priority": "P0",
+      "evidence": [{ "sentenceIndex": 2, "quote": "We must ensure the API is rate limited." }]
+    },
+    {
+      "id": "FR-002",
+      "text": "The data should export in markdown format.",
+      "priority": "P1",
+      "evidence": [{ "sentenceIndex": 7, "quote": "The data should export in markdown format." }]
+    }
+  ],
+  "acceptanceCriteria": [],
+  "risks": [
+    {
+      "id": "RK-001",
+      "text": "Prompt injection risk.",
+      "severity": "high",
+      "evidence": [
+        { "sentenceIndex": 3, "quote": "Also I'm a bit concerned about the prompt injection risk" }
+      ]
+    },
+    {
+      "id": "RK-002",
+      "text": "Layout might break on mobile.",
+      "severity": "medium",
+      "evidence": [{ "sentenceIndex": 8, "quote": "We might break the layout on mobile though." }]
+    }
+  ],
+  "openQuestions": [
+    {
+      "id": "OQ-001",
+      "question": "Is the auth token passed correctly?",
+      "reason": "Flagged as uncertain in dictation",
+      "evidence": [{ "sentenceIndex": 5, "quote": "Wait, is the auth token passed correctly?" }]
+    },
+    {
+      "id": "OQ-002",
+      "question": "How to handle missing keys?",
+      "reason": "Flagged as uncertain in dictation",
+      "evidence": [{ "sentenceIndex": 6, "quote": "Figure out how to handle missing keys." }]
+    }
+  ],
+  "tasks": []
+}
