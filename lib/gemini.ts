@@ -68,8 +68,6 @@ export class GeminiClient implements IGeminiClient {
       responseSchema: jsonSchema,
       maxOutputTokens: 8192,
       temperature: 0.2, // Low temp for more deterministic parsing
-      // Explicitly pass thinking budget for advanced reasoning models
-      thinkingConfig: { thinkingBudgetTokens: 2048 },
     };
 
     const runAttempt = async (currentPrompt: string): Promise<string> => {
@@ -98,7 +96,11 @@ export class GeminiClient implements IGeminiClient {
         }
         return response.text;
       } catch (err: unknown) {
-        if (err instanceof GeminiError && err.reason === 'timeout') {
+        if (
+          err instanceof Error &&
+          err.name === 'GeminiError' &&
+          (err as GeminiError).reason === 'timeout'
+        ) {
           throw err;
         }
 
@@ -107,8 +109,7 @@ export class GeminiClient implements IGeminiClient {
         const status =
           errorObj['status'] ||
           (errorObj['response'] as Record<string, unknown> | undefined)?.['status'];
-        const message =
-          typeof errorObj['message'] === 'string' ? errorObj['message'].toLowerCase() : '';
+        const message = err instanceof Error ? err.message.toLowerCase() : '';
         if (status === 401 || status === 403 || message.includes('api key not valid'))
           throw new GeminiError('auth', 'Authentication failed');
         if (status === 429) throw new GeminiError('rate-limit', 'Rate limited');
@@ -143,10 +144,11 @@ export class GeminiClient implements IGeminiClient {
         }
       } catch (err: unknown) {
         // If it's a known GeminiError, record reason
-        if (err instanceof GeminiError) {
-          lastErrorReason = err.reason;
-          if (err.reason === 'auth') throw err; // Don't retry auth
-          if (err.reason === 'schema' && attempt >= 2) throw err; // Only 1 repair attempt
+        if (err instanceof Error && err.name === 'GeminiError') {
+          const geminiErr = err as GeminiError;
+          lastErrorReason = geminiErr.reason;
+          if (geminiErr.reason === 'auth') throw err; // Don't retry auth
+          if (geminiErr.reason === 'schema' && attempt >= 2) throw err; // Only 1 repair attempt
         } else {
           lastErrorReason = 'unknown';
         }

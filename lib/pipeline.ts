@@ -51,8 +51,8 @@ export async function runPipeline(transcript: string, ip: string): Promise<Pipel
     } catch (err: unknown) {
       mode = 'fallback';
       let reason: FallbackReason = 'unknown';
-      if (err instanceof GeminiError) {
-        reason = err.reason;
+      if (err instanceof Error && err.name === 'GeminiError') {
+        reason = (err as GeminiError).reason;
       }
       const fallback = fallbackSpec(sentences, reason);
       spec = fallback.spec;
