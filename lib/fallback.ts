@@ -1,6 +1,6 @@
 import { Spec, Evidence } from './schema';
 
-export type FallbackReason = 'timeout' | 'schema' | 'auth' | 'rate-limit' | 'unknown';
+export type FallbackReason = 'timeout' | 'schema' | 'auth' | 'rate-limit' | 'unknown' | 'no-key';
 
 /**
  * Deterministic fallback to classify sentences by cue words if generation fails.

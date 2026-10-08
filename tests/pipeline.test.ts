@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { runPipeline } from '@/lib/pipeline';
 import { resetRateLimit } from '@/lib/ratelimit';
-import { getMode } from '@/lib/env';
+import { getMode, getEnv } from '@/lib/env';
 
 vi.mock('@/lib/env', () => ({
   getEnv: vi.fn(),
@@ -49,8 +49,13 @@ describe('runPipeline', () => {
     expect(result.spec.requirements.length).toBe(0); // Dropped by provenance!
   });
 
-  it('runs demo mode successfully', async () => {
+  it('runs demo mode successfully with no-key reason when key is missing', async () => {
     vi.mocked(getMode).mockReturnValue('demo');
+    vi.mocked(getEnv).mockReturnValue({
+      GEMINI_API_KEY: '',
+      GEMINI_MODEL: 'gemini-3.8-flash',
+      FORCE_DEMO_MODE: false,
+    });
 
     const transcript = 'As a user I want to test so that it works.';
     const result = await runPipeline(transcript, '127.0.0.1');
@@ -59,6 +64,7 @@ describe('runPipeline', () => {
     expect(result.spec.title).toContain('Fallback Spec');
     expect(result.spec.userStories.length).toBe(1);
     expect(result.metrics.verifiedEvidence).toBe(1); // Demo mode assigns valid evidence
+    expect(result.warnings.some((w) => w.includes('no-key'))).toBe(true);
   });
 
   it('rejects based on rate limit', async () => {

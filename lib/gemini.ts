@@ -1,5 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { GoogleGenAI, Type, Schema } from '@google/genai';
 import { Spec, SpecSchema } from './schema';
 import { getEnv, isGeminiAvailable } from './env';
 import { FallbackReason } from './fallback';
@@ -16,23 +15,6 @@ export class GeminiError extends Error {
     super(message);
     this.name = 'GeminiError';
   }
-}
-
-// Strip unsupported keywords for Gemini API
-function loosenSchema(schema: unknown): unknown {
-  const result = Array.isArray(schema) ? [] : {};
-  for (const key in schema as Record<string, unknown>) {
-    if (key === 'pattern' || key === 'format') {
-      continue;
-    }
-    const val = (schema as Record<string, unknown>)[key];
-    if (val && typeof val === 'object') {
-      (result as Record<string, unknown>)[key] = loosenSchema(val);
-    } else {
-      (result as Record<string, unknown>)[key] = val;
-    }
-  }
-  return result;
 }
 
 const GLOBAL_DEADLINE_MS = 25000;
@@ -56,16 +38,132 @@ export class GeminiClient implements IGeminiClient {
     let attempt = 0;
     let lastErrorReason: FallbackReason = 'unknown';
 
-    // Build loosened schema
-    const rawSchema = zodToJsonSchema(SpecSchema as never, { target: 'jsonSchema7' });
-    const jsonSchema = loosenSchema(rawSchema) as Record<string, unknown>;
-    // Delete top-level defs if they exist, to simplify for the API
-    if (jsonSchema['definitions']) delete jsonSchema['definitions'];
-    if (jsonSchema['$schema']) delete jsonSchema['$schema'];
+    const evidenceSchema = {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          sentenceIndex: { type: Type.INTEGER },
+          quote: { type: Type.STRING },
+        },
+        required: ['sentenceIndex', 'quote'],
+      },
+    };
 
     const config = {
       responseMimeType: 'application/json',
-      responseSchema: jsonSchema,
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          summary: { type: Type.STRING },
+          problem: { type: Type.STRING },
+          userStories: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                id: { type: Type.STRING },
+                persona: { type: Type.STRING },
+                want: { type: Type.STRING },
+                soThat: { type: Type.STRING },
+                evidence: evidenceSchema,
+              },
+              required: ['id', 'persona', 'want', 'soThat', 'evidence'],
+            },
+          },
+          requirements: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                id: { type: Type.STRING },
+                text: { type: Type.STRING },
+                priority: { type: Type.STRING },
+                evidence: evidenceSchema,
+              },
+              required: ['id', 'text', 'priority', 'evidence'],
+            },
+          },
+          acceptanceCriteria: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                id: { type: Type.STRING },
+                requirementId: { type: Type.STRING },
+                given: { type: Type.STRING },
+                when: { type: Type.STRING },
+                then: { type: Type.STRING },
+              },
+              required: ['id', 'requirementId', 'given', 'when', 'then'],
+            },
+          },
+          risks: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                id: { type: Type.STRING },
+                text: { type: Type.STRING },
+                severity: { type: Type.STRING },
+                evidence: evidenceSchema,
+              },
+              required: ['id', 'text', 'severity', 'evidence'],
+            },
+          },
+          openQuestions: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                id: { type: Type.STRING },
+                question: { type: Type.STRING },
+                reason: { type: Type.STRING },
+                evidence: evidenceSchema,
+              },
+              required: ['id', 'question', 'reason', 'evidence'],
+            },
+          },
+          tasks: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                id: { type: Type.STRING },
+                title: { type: Type.STRING },
+                description: { type: Type.STRING },
+                priority: { type: Type.STRING },
+                size: { type: Type.STRING },
+                requirementIds: { type: Type.ARRAY, items: { type: Type.STRING } },
+                dependsOn: { type: Type.ARRAY, items: { type: Type.STRING } },
+                evidence: evidenceSchema,
+              },
+              required: [
+                'id',
+                'title',
+                'description',
+                'priority',
+                'size',
+                'requirementIds',
+                'dependsOn',
+                'evidence',
+              ],
+            },
+          },
+        },
+        required: [
+          'title',
+          'summary',
+          'problem',
+          'userStories',
+          'requirements',
+          'acceptanceCriteria',
+          'risks',
+          'openQuestions',
+          'tasks',
+        ],
+      } as Schema,
       maxOutputTokens: 8192,
       temperature: 0.2, // Low temp for more deterministic parsing
     };
@@ -85,7 +183,6 @@ export class GeminiClient implements IGeminiClient {
           this.ai.models.generateContent({
             model: this.modelName,
             contents: currentPrompt,
-            // @ts-expect-error SDK may not have thinkingConfig yet
             config,
           }),
           timeoutPromise,
@@ -104,6 +201,7 @@ export class GeminiClient implements IGeminiClient {
           throw err;
         }
 
+        console.log('DEBUG RAW ERR:', err);
         // Check rate limit / auth / server errors
         const errorObj = err as Record<string, unknown>;
         const status =
@@ -112,7 +210,9 @@ export class GeminiClient implements IGeminiClient {
         const message = err instanceof Error ? err.message.toLowerCase() : '';
         if (status === 401 || status === 403 || message.includes('api key not valid'))
           throw new GeminiError('auth', 'Authentication failed');
-        if (status === 429) throw new GeminiError('rate-limit', 'Rate limited');
+        if (status === 429 || status === 503) {
+          throw new GeminiError('rate-limit', 'Rate limited or high demand');
+        }
 
         throw err;
       }
@@ -134,6 +234,8 @@ export class GeminiClient implements IGeminiClient {
         if (validation.success) {
           return validation.data;
         } else {
+          console.error('ZOD ERROR:', validation.error.message);
+          console.error('RAW JSON THAT FAILED:', rawJson);
           // Zod validation failed
           if (attempt === 1) {
             // REPAIR CALL: feed the error back

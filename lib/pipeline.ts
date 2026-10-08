@@ -2,7 +2,7 @@ import { Spec } from './schema';
 import { normalize } from './normalize';
 import { segment } from './segment';
 import { checkRateLimit } from './ratelimit';
-import { getMode } from './env';
+import { getMode, getEnv } from './env';
 import { GeminiClient, GeminiError } from './gemini';
 import { fallbackSpec, FallbackReason } from './fallback';
 import { buildPrompt } from './prompt';
@@ -40,7 +40,9 @@ export async function runPipeline(transcript: string, ip: string): Promise<Pipel
   const opMode = getMode();
   if (opMode === 'demo') {
     mode = 'demo';
-    const fallback = fallbackSpec(sentences, 'unknown');
+    const env = getEnv();
+    const isMissingKey = !env.GEMINI_API_KEY || env.GEMINI_API_KEY.trim() === '';
+    const fallback = fallbackSpec(sentences, isMissingKey ? 'no-key' : 'unknown');
     spec = fallback.spec;
     warnings.push(...fallback.warnings);
   } else {
