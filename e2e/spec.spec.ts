@@ -10,11 +10,11 @@ test.describe('VoiceSpec E2E', () => {
 
     // Demo badge should appear (might be DEMO uppercase from css, but text is Demo)
     await expect(page.getByText('Demo', { exact: true })).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('text=Specification Pane')).toBeVisible();
+    await expect(page.locator('section[aria-label="Specification Pane"]')).toBeVisible();
 
     // Hover a requirement and check sentences are highlighted
     // Wait for the requirement FR-001 (or similar) to exist
-    const req = page.locator('text=User Stories').first();
+    const req = page.locator('text=FR-001').first();
     await expect(req).toBeVisible();
     await req.hover();
 

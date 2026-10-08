@@ -10,6 +10,9 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3001',
     trace: 'on-first-retry',
+    contextOptions: {
+      permissions: ['clipboard-read', 'clipboard-write'],
+    },
   },
   projects: [
     {
