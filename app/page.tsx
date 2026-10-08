@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/lib/use-mobile';
 import { useEffect, useState } from 'react';
 
+import { ProvenanceThread } from '@/components/ProvenanceThread';
+
 export default function Page() {
   const { spec, isGenerating, currentStage } = useStore();
   const isMobile = useIsMobile();
@@ -23,7 +25,8 @@ export default function Page() {
   }, [spec]);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-background">
+    <div className="flex flex-col h-screen overflow-hidden bg-background relative">
+      <ProvenanceThread />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-background focus:text-foreground focus:ring-2 focus:ring-ring"
