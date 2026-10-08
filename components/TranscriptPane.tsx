@@ -172,7 +172,7 @@ export function TranscriptPane() {
             {burstKey > 0 && (
               <div
                 key={burstKey}
-                className="absolute left-0 top-0 w-[3px] bg-marker animate-pulse-down pointer-events-none z-20 motion-reduce:hidden"
+                className="absolute left-0 top-0 w-[3px] bg-marker animate-pulse-down pointer-events-none z-20"
               />
             )}
             <Textarea
@@ -225,12 +225,12 @@ export function TranscriptPane() {
                     onBlur={() => {
                       handleSentenceHover(null);
                     }}
-                    className={`transition-colors duration-150 cursor-default rounded px-1 animate-in fade-in fill-mode-both
+                    className={`transition-colors duration-150 cursor-default rounded px-1 animate-in fade-in fill-mode-both motion-reduce:animate-none motion-reduce:transition-none
                       ${isHighlighted ? 'bg-marker text-ink' : 'hover:bg-slate/10'}
                       ${activeSentenceIndex === idx ? 'ring-2 ring-signal ring-offset-2' : ''}`}
                     style={{
                       animationDuration: '400ms',
-                      animationDelay: `${((idx / Math.max(1, sentences.length)) * 900).toFixed(0)}ms`,
+                      animationDelay: `${(idx * Math.min(30, 900 / Math.max(1, sentences.length))).toFixed(0)}ms`,
                     }}
                   >
                     {sentence}{' '}
@@ -254,12 +254,32 @@ export function TranscriptPane() {
             <Button
               onClick={() => void generateSpec()}
               disabled={!isValid || isGenerating}
-              className="w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
+              className="relative overflow-hidden w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
             >
-              Generate spec
-              <span className="text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
-                ⌘ Enter
-              </span>
+              {isGenerating ? (
+                <>
+                  <span className="relative z-10">{currentStage || 'Generating...'}</span>
+                  <div
+                    className="absolute bottom-0 left-0 h-[2px] bg-sheet/40 transition-all duration-300 ease-out"
+                    style={{
+                      width:
+                        String(currentStage).includes('Verifying') ||
+                        String(currentStage).includes('Checking')
+                          ? '90%'
+                          : String(currentStage).includes('Generating')
+                            ? '60%'
+                            : '30%',
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  Generate spec
+                  <span className="text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
+                    ⌘ Enter
+                  </span>
+                </>
+              )}
             </Button>
             <Button
               variant="ghost"
