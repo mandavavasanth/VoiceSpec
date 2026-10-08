@@ -64,7 +64,9 @@ export const useStore = create<AppState>((set, get) => ({
       ) => {
         const idx = arr.findIndex((i) => i.id === id);
         if (idx !== -1) {
-          arr[idx] = { ...arr[idx], [editableField]: text };
+          arr[idx] = { ...arr[idx], [editableField]: text } as Record<string, unknown> & {
+            id: string;
+          };
           return true;
         }
         return false;

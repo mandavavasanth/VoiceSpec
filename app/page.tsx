@@ -4,6 +4,7 @@ import { TranscriptPane } from '@/components/TranscriptPane';
 import { Toolbar } from '@/components/Toolbar';
 import { EmptyState } from '@/components/EmptyState';
 import { ProgressStages } from '@/components/ProgressStages';
+import { SpecPane } from '@/components/SpecPane';
 import { useStore } from '@/lib/store';
 
 export default function Page() {
@@ -23,13 +24,8 @@ export default function Page() {
             )}
 
             {spec ? (
-              <div className="animate-in fade-in slide-in-from-bottom-4 flex-1 overflow-auto">
-                <h3 className="font-semibold mb-4 text-lg border-b pb-2">
-                  Generated Specification
-                </h3>
-                <pre className="p-4 bg-muted rounded-lg overflow-auto text-xs whitespace-pre-wrap font-mono">
-                  {JSON.stringify(spec, null, 2)}
-                </pre>
+              <div className="animate-in fade-in slide-in-from-bottom-4 flex-1 overflow-hidden flex flex-col -mx-6 -my-6">
+                <SpecPane />
               </div>
             ) : (
               !isGenerating && <EmptyState />
