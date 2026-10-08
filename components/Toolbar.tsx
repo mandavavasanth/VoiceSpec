@@ -7,6 +7,12 @@ import { AlertCircle, Wand2, Download, Copy, Terminal, FileText } from 'lucide-r
 import { toast } from 'sonner';
 import { toMarkdown } from '@/lib/markdown';
 import { toIssues, toGhScript, toIssueBody } from '@/lib/github-export';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export function Toolbar() {
   const { generateSpec, isGenerating, transcript, mode, warnings, error, spec } = useStore();
@@ -105,26 +111,34 @@ export function Toolbar() {
             <Terminal className="w-4 h-4 mr-2" />
             Copy GH Script
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={async () => {
-              if (spec.tasks.length === 0) {
-                toast.error('No tasks to copy');
-                return;
-              }
-              try {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                await navigator.clipboard.writeText(toIssueBody(spec.tasks[0]!, spec));
-                toast.success('First task body copied');
-              } catch {
-                toast.error('Failed to copy issue body');
-              }
-            }}
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            Copy Issue Body
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3">
+              <FileText className="w-4 h-4 mr-2" />
+              Copy Issue Body
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 max-h-64 overflow-y-auto">
+              {spec.tasks.length === 0 ? (
+                <DropdownMenuItem disabled>No tasks available</DropdownMenuItem>
+              ) : (
+                spec.tasks.map((task) => (
+                  <DropdownMenuItem
+                    key={task.id}
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(toIssueBody(task, spec));
+                        toast.success(`Copied body for ${task.id}`);
+                      } catch {
+                        toast.error('Failed to copy issue body');
+                      }
+                    }}
+                  >
+                    <span className="font-medium mr-2">{task.id}</span>
+                    <span className="truncate text-muted-foreground">{task.title}</span>
+                  </DropdownMenuItem>
+                ))
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
     </header>

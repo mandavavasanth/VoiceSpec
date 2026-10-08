@@ -93,7 +93,7 @@ describe('GitHub Export', () => {
     const script = toGhScript(toIssues(spec));
 
     if (isWindows) {
-      // Just check the content, can't reliably run bash -n on Windows runner without WSL/Git Bash path
+      console.warn('Skipping bash syntax check on Windows. Please run on CI/Linux.');
       expect(script).toContain('set -euo pipefail');
     } else {
       const tmpFile = path.join(os.tmpdir(), 'test-script.sh');
