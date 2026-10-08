@@ -3,7 +3,6 @@
 import { TranscriptPane } from '@/components/TranscriptPane';
 import { Toolbar } from '@/components/Toolbar';
 import { EmptyState } from '@/components/EmptyState';
-import { ProgressStages } from '@/components/ProgressStages';
 import { SpecPane } from '@/components/SpecPane';
 import { useStore } from '@/lib/store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -69,12 +68,6 @@ export default function Page() {
                 className="flex-1 overflow-auto bg-card relative"
               >
                 <div className="absolute inset-0 p-4 sm:p-6 flex flex-col">
-                  {isGenerating && (
-                    <div className="absolute top-4 inset-x-4 z-10 flex justify-center">
-                      <ProgressStages />
-                    </div>
-                  )}
-
                   {spec ? (
                     <div className="animate-in fade-in slide-in-from-bottom-4 flex-1 overflow-hidden flex flex-col -mx-4 sm:-mx-6 -my-4 sm:-my-6 motion-reduce:animate-none motion-reduce:transition-none">
                       <SpecPane />
@@ -99,12 +92,6 @@ export default function Page() {
               className="relative flex-1 overflow-auto bg-paper"
             >
               <div className="absolute inset-0 p-6 flex flex-col">
-                {isGenerating && (
-                  <div className="absolute top-4 inset-x-4 z-10 flex justify-center">
-                    <ProgressStages />
-                  </div>
-                )}
-
                 {spec ? (
                   <div className="animate-in fade-in flex-1 flex flex-col motion-reduce:animate-none motion-reduce:transition-none">
                     <SpecPane />

@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useMemo, useRef, useEffect, KeyboardEvent } from 'react';
 import { buildEvidenceIndex, getHighlightPriority } from '@/lib/evidence-index';
+import { ProgressStages } from '@/components/ProgressStages';
 
 export function TranscriptPane() {
   const {
@@ -227,25 +228,28 @@ export function TranscriptPane() {
       )}
 
       {!spec && (
-        <div className="mt-6 flex flex-col sm:flex-row items-center gap-3 w-full">
-          <Button
-            onClick={() => void generateSpec()}
-            disabled={!isValid || isGenerating}
-            className="w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
-          >
-            Generate spec
-            <span className="text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
-              ⌘ Enter
-            </span>
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={loadExample}
-            disabled={isGenerating}
-            className="w-full sm:w-auto text-slate hover:text-ink rounded-controls h-11 px-6"
-          >
-            Use an example
-          </Button>
+        <div className="mt-6">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+            <Button
+              onClick={() => void generateSpec()}
+              disabled={!isValid || isGenerating}
+              className="w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
+            >
+              Generate spec
+              <span className="text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
+                ⌘ Enter
+              </span>
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={loadExample}
+              disabled={isGenerating}
+              className="w-full sm:w-auto text-slate hover:text-ink rounded-controls h-11 px-6"
+            >
+              Use an example
+            </Button>
+          </div>
+          <ProgressStages />
         </div>
       )}
     </div>
