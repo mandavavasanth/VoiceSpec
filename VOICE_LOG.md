@@ -21,13 +21,13 @@
 - Added realistic dictation fixture (`fixtures/sample-transcript.txt`) and matching mock spec.
 - Implemented and passed all unit tests across schema, normalize, segment, integrity, and fallback.
 
-- M3 Part A completed: Implemented Gemini client wrapper, prompt framing, provenance verifier, and rate limiter. Tests passing.
-
-## M3 Part B
+## M3
 
 - Built `lib/pipeline.ts` to orchestrate normalize, segment, rate limiting, LLM/fallback generation, grounding, and integrity checks.
 - Implemented `/api/generate` route in Node runtime with `force-dynamic` and 30s max duration.
 - Added strict payload size checking (~100KB) and streaming NDJSON responses.
 - Fixed config file renames (`vitest.config.mts`, `commitlint.config.mjs`) and resolved lint/type errors.
-- Verified pipeline locally with `test-gemini.ts` falling back securely to Demo mode on missing or invalid keys.
 - Fully resolved real Gemini call schema structure by providing a rigid object schema for the `@google/genai` SDK and appropriately mapped overload (503) and quota limits (429) to rate-limit fallback.
+- Added support for `GEMINI_FALLBACK_MODEL`, which automatically activates when the main model fails due to rate limits or 503s.
+- Created schema consistency test to ensure Zod matches the hardcoded SDK schema.
+- Verified pipeline locally with `test-gemini.ts` falling back securely to Demo mode on missing keys or exhausted retries.

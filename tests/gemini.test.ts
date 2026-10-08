@@ -49,7 +49,8 @@ describe('GeminiClient', () => {
 
     const client = new GeminiClient();
     const result = await client.generateSpec('prompt');
-    expect(result.title).toBe('Test');
+    expect(result.spec.title).toBe('Test');
+    expect(result.modelUsed).toBe('gemini-3.8-flash');
   });
 
   it('attempts repair call if zod validation fails', async () => {
@@ -77,7 +78,8 @@ describe('GeminiClient', () => {
     // Advance timers if backoff is used, though repair doesn't use backoff, it just loops
     await vi.runAllTimersAsync();
     const result = await promise;
-    expect(result.title).toBe('Repaired');
+    expect(result.spec.title).toBe('Repaired');
+    expect(result.modelUsed).toBe('gemini-3.8-flash');
     expect(mockGenerateContent).toHaveBeenCalledTimes(2);
   });
 

@@ -38,25 +38,39 @@ void (async () => {
             return;
           }
 
-          try {
-            const result = await runPipeline(transcript, '127.0.0.1');
-            console.log('Mode:', result.mode);
-            console.log('Latency:', result.metrics.latency, 'ms');
-            console.log('Verified Evidence:', result.metrics.verifiedEvidence);
-            console.log('Dropped Evidence:', result.metrics.droppedEvidence);
+          let attempt = 0;
+          let success = false;
 
-            if (result.warnings.length > 0) {
-              console.log('Warnings:', result.warnings);
-            }
-          } catch (err: unknown) {
-            if (err instanceof Error) {
-              console.error('Pipeline failed:', err.message);
-              if (err.name === 'GeminiError') {
-                console.error('Reason code:', (err as Error & { reason?: string }).reason);
+          while (attempt < 3 && !success) {
+            attempt++;
+            console.log(`\nAttempt ${String(attempt)}...`);
+            try {
+              const result = await runPipeline(transcript, '127.0.0.1');
+              if (result.mode === 'gemini') {
+                success = true;
+                console.log('Mode:', result.mode);
+                console.log('Model Used:', result.metrics.modelUsed);
+                console.log('Latency:', result.metrics.latency, 'ms');
+                console.log('Verified Evidence:', result.metrics.verifiedEvidence);
+                console.log('Dropped Evidence:', result.metrics.droppedEvidence);
+                if (result.warnings.length > 0) {
+                  console.log('Warnings:', result.warnings);
+                }
+              } else {
+                console.log('Failed. Mode:', result.mode, 'Warnings:', result.warnings);
+                if (result.warnings.some((w) => w.includes('rate-limit')) && attempt < 3) {
+                  console.log('Waiting 2 minutes before retry...');
+                  await new Promise((resolve) => setTimeout(resolve, 120000));
+                }
               }
-            } else {
+            } catch (err: unknown) {
               console.error('Unknown error:', err);
             }
+          }
+
+          if (!success) {
+            console.log('\nAll 3 tries failed.');
+            console.log('Fallback model name to use: gemini-2.5-flash');
           }
         }
 

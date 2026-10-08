@@ -4,7 +4,7 @@ import { getEnv, isGeminiAvailable } from './env';
 import { FallbackReason } from './fallback';
 
 export interface IGeminiClient {
-  generateSpec(prompt: string): Promise<Spec>;
+  generateSpec(prompt: string): Promise<{ spec: Spec; modelUsed: string }>;
 }
 
 export class GeminiError extends Error {
@@ -21,8 +21,172 @@ const GLOBAL_DEADLINE_MS = 25000;
 const ATTEMPT_TIMEOUT_MS = 10000;
 
 export class GeminiClient implements IGeminiClient {
-  private ai: GoogleGenAI;
-  private modelName: string;
+  private ai: any;
+  private mainModelName: string;
+  private fallbackModelName?: string;
+
+  public static readonly geminiResponseSchema = {
+    type: Type.OBJECT,
+    properties: {
+      title: { type: Type.STRING },
+      summary: { type: Type.STRING },
+      problem: { type: Type.STRING },
+      userStories: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            id: { type: Type.STRING },
+            persona: { type: Type.STRING },
+            want: { type: Type.STRING },
+            soThat: { type: Type.STRING },
+            evidence: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  sentenceIndex: { type: Type.INTEGER },
+                  quote: { type: Type.STRING },
+                },
+                required: ['sentenceIndex', 'quote'],
+              },
+            },
+          },
+          required: ['id', 'persona', 'want', 'soThat', 'evidence'],
+        },
+      },
+      requirements: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            id: { type: Type.STRING },
+            text: { type: Type.STRING },
+            priority: { type: Type.STRING },
+            evidence: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  sentenceIndex: { type: Type.INTEGER },
+                  quote: { type: Type.STRING },
+                },
+                required: ['sentenceIndex', 'quote'],
+              },
+            },
+          },
+          required: ['id', 'text', 'priority', 'evidence'],
+        },
+      },
+      acceptanceCriteria: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            id: { type: Type.STRING },
+            requirementId: { type: Type.STRING },
+            given: { type: Type.STRING },
+            when: { type: Type.STRING },
+            then: { type: Type.STRING },
+          },
+          required: ['id', 'requirementId', 'given', 'when', 'then'],
+        },
+      },
+      risks: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            id: { type: Type.STRING },
+            text: { type: Type.STRING },
+            severity: { type: Type.STRING },
+            evidence: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  sentenceIndex: { type: Type.INTEGER },
+                  quote: { type: Type.STRING },
+                },
+                required: ['sentenceIndex', 'quote'],
+              },
+            },
+          },
+          required: ['id', 'text', 'severity', 'evidence'],
+        },
+      },
+      openQuestions: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            id: { type: Type.STRING },
+            question: { type: Type.STRING },
+            reason: { type: Type.STRING },
+            evidence: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  sentenceIndex: { type: Type.INTEGER },
+                  quote: { type: Type.STRING },
+                },
+                required: ['sentenceIndex', 'quote'],
+              },
+            },
+          },
+          required: ['id', 'question', 'reason', 'evidence'],
+        },
+      },
+      tasks: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            id: { type: Type.STRING },
+            title: { type: Type.STRING },
+            description: { type: Type.STRING },
+            priority: { type: Type.STRING },
+            size: { type: Type.STRING },
+            requirementIds: { type: Type.ARRAY, items: { type: Type.STRING } },
+            dependsOn: { type: Type.ARRAY, items: { type: Type.STRING } },
+            evidence: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  sentenceIndex: { type: Type.INTEGER },
+                  quote: { type: Type.STRING },
+                },
+                required: ['sentenceIndex', 'quote'],
+              },
+            },
+          },
+          required: [
+            'id',
+            'title',
+            'description',
+            'priority',
+            'size',
+            'requirementIds',
+            'dependsOn',
+            'evidence',
+          ],
+        },
+      },
+    },
+    required: [
+      'title',
+      'summary',
+      'problem',
+      'userStories',
+      'requirements',
+      'acceptanceCriteria',
+      'risks',
+      'openQuestions',
+      'tasks',
+    ],
+  } as Schema;
 
   constructor() {
     const env = getEnv();
@@ -30,145 +194,22 @@ export class GeminiClient implements IGeminiClient {
       throw new GeminiError('auth', 'Gemini API not available (demo mode or missing key)');
     }
     this.ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
-    this.modelName = env.GEMINI_MODEL;
+    this.mainModelName = env.GEMINI_MODEL;
+    this.fallbackModelName = env.GEMINI_FALLBACK_MODEL;
   }
 
-  async generateSpec(prompt: string): Promise<Spec> {
+  async generateSpec(prompt: string): Promise<{ spec: Spec; modelUsed: string }> {
     const startTime = Date.now();
     let attempt = 0;
     let lastErrorReason: FallbackReason = 'unknown';
-
-    const evidenceSchema = {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          sentenceIndex: { type: Type.INTEGER },
-          quote: { type: Type.STRING },
-        },
-        required: ['sentenceIndex', 'quote'],
-      },
-    };
-
     const config = {
       responseMimeType: 'application/json',
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          title: { type: Type.STRING },
-          summary: { type: Type.STRING },
-          problem: { type: Type.STRING },
-          userStories: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                id: { type: Type.STRING },
-                persona: { type: Type.STRING },
-                want: { type: Type.STRING },
-                soThat: { type: Type.STRING },
-                evidence: evidenceSchema,
-              },
-              required: ['id', 'persona', 'want', 'soThat', 'evidence'],
-            },
-          },
-          requirements: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                id: { type: Type.STRING },
-                text: { type: Type.STRING },
-                priority: { type: Type.STRING },
-                evidence: evidenceSchema,
-              },
-              required: ['id', 'text', 'priority', 'evidence'],
-            },
-          },
-          acceptanceCriteria: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                id: { type: Type.STRING },
-                requirementId: { type: Type.STRING },
-                given: { type: Type.STRING },
-                when: { type: Type.STRING },
-                then: { type: Type.STRING },
-              },
-              required: ['id', 'requirementId', 'given', 'when', 'then'],
-            },
-          },
-          risks: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                id: { type: Type.STRING },
-                text: { type: Type.STRING },
-                severity: { type: Type.STRING },
-                evidence: evidenceSchema,
-              },
-              required: ['id', 'text', 'severity', 'evidence'],
-            },
-          },
-          openQuestions: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                id: { type: Type.STRING },
-                question: { type: Type.STRING },
-                reason: { type: Type.STRING },
-                evidence: evidenceSchema,
-              },
-              required: ['id', 'question', 'reason', 'evidence'],
-            },
-          },
-          tasks: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                id: { type: Type.STRING },
-                title: { type: Type.STRING },
-                description: { type: Type.STRING },
-                priority: { type: Type.STRING },
-                size: { type: Type.STRING },
-                requirementIds: { type: Type.ARRAY, items: { type: Type.STRING } },
-                dependsOn: { type: Type.ARRAY, items: { type: Type.STRING } },
-                evidence: evidenceSchema,
-              },
-              required: [
-                'id',
-                'title',
-                'description',
-                'priority',
-                'size',
-                'requirementIds',
-                'dependsOn',
-                'evidence',
-              ],
-            },
-          },
-        },
-        required: [
-          'title',
-          'summary',
-          'problem',
-          'userStories',
-          'requirements',
-          'acceptanceCriteria',
-          'risks',
-          'openQuestions',
-          'tasks',
-        ],
-      } as Schema,
+      responseSchema: GeminiClient.geminiResponseSchema,
       maxOutputTokens: 8192,
       temperature: 0.2, // Low temp for more deterministic parsing
     };
 
-    const runAttempt = async (currentPrompt: string): Promise<string> => {
+    const runAttempt = async (currentPrompt: string, modelToUse: string): Promise<string> => {
       const abortController = new AbortController();
 
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -179,18 +220,22 @@ export class GeminiClient implements IGeminiClient {
       });
 
       try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const response = await Promise.race([
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
           this.ai.models.generateContent({
-            model: this.modelName,
+            model: modelToUse,
             contents: currentPrompt,
             config,
           }),
           timeoutPromise,
         ]);
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (!response.text) {
           throw new Error('Empty response from model');
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
         return response.text;
       } catch (err: unknown) {
         if (
@@ -218,10 +263,13 @@ export class GeminiClient implements IGeminiClient {
       }
     };
 
+    let modelToUse = this.mainModelName;
+    let fallbackAttempted = false;
+
     while (Date.now() - startTime < GLOBAL_DEADLINE_MS) {
       attempt++;
       try {
-        const rawJson = await runAttempt(prompt);
+        const rawJson = await runAttempt(prompt, modelToUse);
         let parsed: unknown;
         try {
           parsed = JSON.parse(rawJson);
@@ -232,7 +280,7 @@ export class GeminiClient implements IGeminiClient {
 
         const validation = SpecSchema.safeParse(parsed);
         if (validation.success) {
-          return validation.data;
+          return { spec: validation.data, modelUsed: modelToUse };
         } else {
           console.error('ZOD ERROR:', validation.error.message);
           console.error('RAW JSON THAT FAILED:', rawJson);
@@ -263,9 +311,18 @@ export class GeminiClient implements IGeminiClient {
 
         // Exponential backoff + jitter for 429 / 5xx
         if (lastErrorReason === 'rate-limit' || lastErrorReason === 'unknown') {
-          if (attempt > 2) throw new GeminiError(lastErrorReason, 'Max retries exceeded');
-          const delay = Math.pow(2, attempt) * 500 + Math.random() * 200;
-          await new Promise((resolve) => setTimeout(resolve, delay));
+          if (attempt > 2 || fallbackAttempted) {
+            if (modelToUse === this.mainModelName && this.fallbackModelName) {
+              modelToUse = this.fallbackModelName;
+              fallbackAttempted = true;
+              // Reset attempt count for the fallback try so it gets 1 attempt (which might repair if needed, but attempt counter will be 3+, meaning it won't repair. Prompt says "try the fallback model once")
+            } else {
+              throw new GeminiError(lastErrorReason, 'Max retries exceeded');
+            }
+          } else {
+            const delay = Math.pow(2, attempt) * 500 + Math.random() * 200;
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          }
         }
       }
     }

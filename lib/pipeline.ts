@@ -17,6 +17,7 @@ export interface PipelineResult {
     latency: number;
     verifiedEvidence: number;
     droppedEvidence: number;
+    modelUsed?: string;
   };
 }
 
@@ -36,6 +37,7 @@ export async function runPipeline(transcript: string, ip: string): Promise<Pipel
   const sentences = segment(cleaned);
   let spec: Spec;
   let mode: 'gemini' | 'demo' | 'fallback' = 'gemini';
+  let modelUsed: string | undefined = undefined;
 
   const opMode = getMode();
   if (opMode === 'demo') {
@@ -49,7 +51,13 @@ export async function runPipeline(transcript: string, ip: string): Promise<Pipel
     try {
       const client = new GeminiClient();
       const prompt = buildPrompt(sentences);
-      spec = await client.generateSpec(prompt);
+      const res = await client.generateSpec(prompt);
+      spec = res.spec;
+      modelUsed = res.modelUsed;
+      const env = getEnv();
+      if (modelUsed && env.GEMINI_FALLBACK_MODEL && modelUsed === env.GEMINI_FALLBACK_MODEL) {
+        warnings.push(`Fallback model used. Reason: rate-limit`);
+      }
     } catch (err: unknown) {
       mode = 'fallback';
       let reason: FallbackReason = 'unknown';
@@ -78,6 +86,7 @@ export async function runPipeline(transcript: string, ip: string): Promise<Pipel
       latency,
       verifiedEvidence: verified,
       droppedEvidence: dropped,
+      modelUsed,
     },
   };
 }
