@@ -65,7 +65,7 @@ export default function Page() {
             </div>
             <TabsContent
               value="transcript"
-              className="flex-1 overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden data-[state=active]:flex flex-col"
+              className="flex-1 overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden data-[state=active]:flex flex-col data-[state=active]:animate-in data-[state=active]:fade-in data-[state=active]:slide-in-from-left-3 data-[state=active]:duration-200"
             >
               <section aria-label="Transcript Pane" className="flex-1 overflow-hidden">
                 <TranscriptPane />
@@ -73,7 +73,7 @@ export default function Page() {
             </TabsContent>
             <TabsContent
               value="spec"
-              className="flex-1 overflow-hidden m-0 p-0 h-full bg-paper data-[state=inactive]:hidden data-[state=active]:flex flex-col relative"
+              className="flex-1 overflow-hidden m-0 p-0 h-full bg-paper data-[state=inactive]:hidden data-[state=active]:flex flex-col relative data-[state=active]:animate-in data-[state=active]:fade-in data-[state=active]:slide-in-from-right-3 data-[state=active]:duration-200"
             >
               <section
                 aria-label="Specification Pane"
@@ -85,7 +85,7 @@ export default function Page() {
                       <SpecPane />
                     </div>
                   ) : (
-                    !isGenerating && <EmptyState />
+                    <EmptyState isGenerating={isGenerating} />
                   )}
                 </div>
               </section>

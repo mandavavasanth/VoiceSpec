@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { SectionCard } from './SectionCard';
 import { useStore } from '@/lib/store';
 import { buildEvidenceIndex, getHighlightPriority } from '@/lib/evidence-index';
@@ -29,21 +29,25 @@ function CollapsibleSection({
           setIsExpanded(!isExpanded);
         }}
         aria-expanded={isExpanded}
-        className="flex items-center gap-2 mb-2 hover:bg-slate/5 py-1 px-2 -ml-2 rounded-md transition-colors w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal"
+        className="flex items-center gap-2 mb-2 hover:bg-slate/5 py-1 px-2 -ml-2 rounded-md transition-colors w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal group"
       >
-        <span className="text-slate">
-          {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+        <span
+          className={`text-slate transition-transform duration-200 motion-reduce:transition-none ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
+        >
+          <ChevronRight size={18} />
         </span>
         <h3 className="text-lg font-medium text-ink">
           {title} <span className="text-slate ml-1 text-sm font-normal">({count})</span>
         </h3>
       </button>
 
-      {isExpanded && (
-        <div className="flex flex-col border border-border rounded-lg bg-sheet overflow-hidden shadow-sheet">
-          {children}
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-200 motion-reduce:transition-none ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col border-t border-border mt-2 pt-2">{children}</div>
         </div>
-      )}
+      </div>
     </section>
   );
 }

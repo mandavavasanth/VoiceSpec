@@ -3,9 +3,10 @@
 import { useStore } from '@/lib/store';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { useMemo, useRef, useEffect, KeyboardEvent } from 'react';
+import { useMemo, useRef, useEffect, KeyboardEvent, useState } from 'react';
 import { buildEvidenceIndex, getHighlightPriority } from '@/lib/evidence-index';
 import { ProgressStages } from '@/components/ProgressStages';
+import { isDictationBurst } from '@/lib/ui-utils';
 
 export function TranscriptPane() {
   const {
@@ -26,6 +27,16 @@ export function TranscriptPane() {
   const charCount = transcript.length;
   const isValid = charCount >= 40 && charCount <= 20000;
   const showWarning = charCount > 0 && !isValid;
+
+  const previousTranscriptRef = useRef(transcript);
+  const [burstKey, setBurstKey] = useState(0);
+
+  useEffect(() => {
+    if (isDictationBurst(previousTranscriptRef.current, transcript)) {
+      setBurstKey((prev) => prev + 1);
+    }
+    previousTranscriptRef.current = transcript;
+  }, [transcript]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -124,7 +135,7 @@ export function TranscriptPane() {
   return (
     <div className="flex flex-col h-full bg-paper p-4 sm:p-6 lg:p-8 border-r border-border overflow-y-auto">
       {!spec && (
-        <div className="mb-8">
+        <div className="mb-8 animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-both">
           <h1 className="font-newsreader text-[2.5rem] md:text-[3.5rem] leading-[1.05] tracking-tight text-ink mb-3">
             Say it messy.
             <br />
@@ -156,8 +167,14 @@ export function TranscriptPane() {
         onKeyDown={handleGlobalKeyDown}
       >
         {!spec ? (
-          <div className="flex flex-col flex-grow relative">
+          <div className="flex flex-col flex-grow relative overflow-hidden rounded-sheet">
             <div className="absolute inset-0 bg-sheet rounded-sheet shadow-sheet pointer-events-none" />
+            {burstKey > 0 && (
+              <div
+                key={burstKey}
+                className="absolute left-0 top-0 w-[3px] bg-marker animate-pulse-down pointer-events-none z-20 motion-reduce:hidden"
+              />
+            )}
             <Textarea
               value={transcript}
               onChange={(e) => {
@@ -208,7 +225,7 @@ export function TranscriptPane() {
                     onBlur={() => {
                       handleSentenceHover(null);
                     }}
-                    className={`transition-colors duration-200 cursor-default rounded px-1 animate-in fade-in fill-mode-both
+                    className={`transition-colors duration-150 cursor-default rounded px-1 animate-in fade-in fill-mode-both
                       ${isHighlighted ? 'bg-marker text-ink' : 'hover:bg-slate/10'}
                       ${activeSentenceIndex === idx ? 'ring-2 ring-signal ring-offset-2' : ''}`}
                     style={{

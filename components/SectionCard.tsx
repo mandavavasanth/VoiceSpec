@@ -36,6 +36,8 @@ export function SectionCard({
 }: SectionCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draftText, setDraftText] = useState(editableText || '');
+  const [justSaved, setJustSaved] = useState(false);
+  const saveTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const elRef = useRef<HTMLDivElement>(null);
 
@@ -64,6 +66,18 @@ export function SectionCard({
     }
   }, [isHighlighted, isPinned]);
 
+  const handleSave = () => {
+    if (draftText !== editableText) {
+      onSave(id, draftText);
+      setJustSaved(true);
+      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+      saveTimeout.current = setTimeout(() => {
+        setJustSaved(false);
+      }, 600);
+    }
+    setIsEditing(false);
+  };
+
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') {
       e.preventDefault();
@@ -72,8 +86,7 @@ export function SectionCard({
       setDraftText(editableText || '');
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      onSave(id, draftText);
-      setIsEditing(false);
+      handleSave();
     }
   };
 
@@ -113,9 +126,9 @@ export function SectionCard({
         onClick(id);
       }}
       onKeyDown={handleGlobalKeyDown}
-      className={`group relative flex transition-colors duration-200 outline-none
+      className={`group relative flex transition-colors duration-150 outline-none
         ${!isLast ? 'border-b border-border/50' : ''}
-        ${isHighlighted ? 'bg-signal/5' : 'hover:bg-slate/5'}
+        ${justSaved ? 'bg-marker transition-[background-color] duration-[600ms] ease-out motion-reduce:transition-none' : isHighlighted ? 'bg-signal/5' : 'hover:bg-slate/5'}
         ${isPinned ? 'ring-2 ring-inset ring-signal' : ''}
         ${isHighlighted && !isPinned ? 'ring-1 ring-inset ring-signal/20' : ''}
       `}
@@ -158,17 +171,14 @@ export function SectionCard({
                 setDraftText(e.target.value);
               }}
               onKeyDown={handleKeyDown}
-              onBlur={() => {
-                onSave(id, draftText);
-                setIsEditing(false);
-              }}
+              onBlur={handleSave}
               className="h-8 text-[15px] py-1 px-2 mb-1 shadow-sm rounded-controls font-instrument focus-visible:ring-signal focus-visible:ring-offset-1"
             />
           ) : (
             <div className="break-words text-ink font-instrument">
               {children}
               {evidenceSentences.length > 0 && (
-                <sup className="ml-1 text-xs text-signal/80 font-mono tracking-tighter cursor-default select-none pointer-events-none">
+                <sup className="ml-1 text-xs text-slate/60 font-mono tracking-tighter cursor-default select-none pointer-events-none">
                   [{evidenceSentences.join(',')}]
                 </sup>
               )}
