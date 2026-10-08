@@ -72,7 +72,7 @@ export default function Page() {
               >
                 <div className="absolute inset-0 p-4 sm:p-6 flex flex-col">
                   {spec ? (
-                    <div className="animate-in fade-in slide-in-from-bottom-4 flex-1 overflow-hidden flex flex-col -mx-4 sm:-mx-6 -my-4 sm:-my-6 motion-reduce:animate-none motion-reduce:transition-none">
+                    <div className="animate-in fade-in slide-in-from-bottom-4 flex-1 overflow-hidden flex flex-col -mx-4 sm:-mx-6 -my-4 sm:-my-6 motion-reduce:animate-none motion-reduce:transition-none delay-1000 duration-700 fill-mode-both">
                       <SpecPane />
                     </div>
                   ) : (
@@ -96,7 +96,7 @@ export default function Page() {
             >
               <div className="absolute inset-0 p-6 flex flex-col">
                 {spec ? (
-                  <div className="animate-in fade-in flex-1 flex flex-col motion-reduce:animate-none motion-reduce:transition-none">
+                  <div className="animate-in fade-in flex-1 flex flex-col motion-reduce:animate-none motion-reduce:transition-none delay-1000 duration-700 fill-mode-both">
                     <SpecPane />
                   </div>
                 ) : (

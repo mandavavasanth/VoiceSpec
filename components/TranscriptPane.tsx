@@ -208,9 +208,13 @@ export function TranscriptPane() {
                     onBlur={() => {
                       handleSentenceHover(null);
                     }}
-                    className={`transition-colors duration-200 cursor-default rounded px-1 
+                    className={`transition-colors duration-200 cursor-default rounded px-1 animate-in fade-in fill-mode-both
                       ${isHighlighted ? 'bg-marker text-ink' : 'hover:bg-slate/10'}
                       ${activeSentenceIndex === idx ? 'ring-2 ring-signal ring-offset-2' : ''}`}
+                    style={{
+                      animationDuration: '400ms',
+                      animationDelay: `${((idx / Math.max(1, sentences.length)) * 900).toFixed(0)}ms`,
+                    }}
                   >
                     {sentence}{' '}
                   </span>
