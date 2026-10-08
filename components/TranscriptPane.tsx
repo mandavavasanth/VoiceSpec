@@ -14,6 +14,7 @@ export function TranscriptPane() {
     setTranscript,
     generateSpec,
     isGenerating,
+    currentStage,
     spec,
     sentences,
     reset,
