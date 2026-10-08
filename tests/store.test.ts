@@ -9,7 +9,7 @@ describe('Store Stream Parser', () => {
     const encoder = new TextEncoder();
 
     // Create a mock stream with split chunks
-    let controller: ReadableStreamDefaultController<Uint8Array>;
+    let controller = null as unknown as ReadableStreamDefaultController<Uint8Array>;
     const stream = new ReadableStream<Uint8Array>({
       start(c) {
         controller = c;

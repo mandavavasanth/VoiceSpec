@@ -58,7 +58,10 @@ export const useStore = create<AppState>((set, get) => ({
       const spec = { ...state.spec };
 
       // Allow-list of fields that can be edited per ID prefix
-      const tryUpdate = (arr: any[], editableField: string) => {
+      const tryUpdate = (
+        arr: Array<Record<string, unknown> & { id: string }>,
+        editableField: string,
+      ) => {
         const idx = arr.findIndex((i) => i.id === id);
         if (idx !== -1) {
           arr[idx] = { ...arr[idx], [editableField]: text };
