@@ -3,9 +3,10 @@
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Wand2, Download, Copy, Terminal, FileText } from 'lucide-react';
+import { AlertCircle, Wand2, Download, Copy, Terminal, FileText, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 import { toMarkdown } from '@/lib/markdown';
+import { toAgentPrompt } from '@/lib/prompt';
 import { toIssues, toGhScript, toIssueBody } from '@/lib/github-export';
 import {
   DropdownMenu,
@@ -95,6 +96,21 @@ export function Toolbar() {
           >
             <Download className="w-4 h-4 mr-2" />
             Download MD
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(toAgentPrompt(spec));
+                toast.success('Agent prompt copied to clipboard');
+              } catch {
+                toast.error('Failed to copy prompt');
+              }
+            }}
+          >
+            <Bot className="w-4 h-4 mr-2" />
+            Copy Agent Prompt
           </Button>
           <Button
             variant="outline"

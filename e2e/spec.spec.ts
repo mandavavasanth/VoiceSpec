@@ -28,6 +28,10 @@ test.describe('VoiceSpec E2E', () => {
     // Click a copy button and check for toast
     await page.click('text=Copy MD');
     await expect(page.locator('text=Markdown copied to clipboard')).toBeVisible();
+
+    // Click Copy Agent Prompt button and check for toast
+    await page.click('text=Copy Agent Prompt');
+    await expect(page.locator('text=Agent prompt copied to clipboard')).toBeVisible();
   });
 
   test('Happy path with accessible navigation', async ({ page, isMobile }) => {

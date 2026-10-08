@@ -59,3 +59,4 @@
 - Ensured animations inside the Specification pane respect the `prefers-reduced-motion` media query using `motion-reduce` utilities.
 - Converted Transcript pane sentences to a single tab stop, controllable entirely by arrow keys leveraging `aria-activedescendant` for proper screen reader announcement.
 - Upgraded the E2E testing framework (`playwright`) configuring `FORCE_DEMO_MODE` dynamically across ports to bypass Gemini APIs strictly. Added a full CI/CD step ensuring UI stability on headless Chrome.
+- Added a "Copy Agent Prompt" feature that transforms the current Spec into a deterministic prompt containing goals, tasks topologically sorted with a cycle-fallback, requirements, and instructions for an external coding agent.
