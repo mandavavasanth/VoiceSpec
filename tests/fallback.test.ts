@@ -40,7 +40,7 @@ describe('fallbackSpec', () => {
     expect(spec.risks[0]?.evidence[0]?.sentenceIndex).toBe(2);
     expect(spec.risks[0]?.evidence[0]?.quote).toBe(sentences[2]);
 
-    // Explicitly test reason code formats
-    expect(warnings.some((w) => w.includes('Fallback mode activated. Reason: timeout'))).toBe(true);
+    // Reason code is the only warning entry (no verbose message)
+    expect(warnings[0]).toBe('timeout');
   });
 });
