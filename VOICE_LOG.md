@@ -68,3 +68,12 @@
 - Added MIT License and removed unused code and `console.log` statements.
 - Validated the codebase through ESLint, TypeScript, Vitest, and Playwright across a full CI loop and verified the clean state.
 - Performed a clean clone and install in a separate directory to ensure zero friction onboarding.
+
+## M8: UI Redesign
+
+- Replaced standard shadcn defaults with custom 'Marginalia' theme using deep ink, signal blue, and paper colors.
+- Redesigned the Toolbar into a sleek minimal top-bar and consolidated actions into a dropdown menu.
+- Replaced the stage indicator with an inline timeline.
+- Drew an animated SVG provenance thread connecting the active transcript sentence to the active spec item.
+- Staggered the initial fade-in of transcript sentences and delayed the spec pane for a sophisticated reveal animation.
+- Applied a segmented control pattern for mobile layout navigation.

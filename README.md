@@ -4,8 +4,8 @@ Transform raw product discovery transcripts into structured, developer-ready spe
 
 **Live Demo:** [Placeholder URL]
 
-![Hero Screenshot](docs/hero.png)
-![Demo GIF](docs/demo.gif)
+![Hero Screenshot Desktop](docs/step8-desktop.png)
+![Hero Screenshot Mobile](docs/step8-mobile.png)
 
 ## Quickstart with Wispr Flow
 
