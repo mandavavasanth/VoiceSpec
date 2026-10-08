@@ -30,3 +30,4 @@
 - Added strict payload size checking (~100KB) and streaming NDJSON responses.
 - Fixed config file renames (`vitest.config.mts`, `commitlint.config.mjs`) and resolved lint/type errors.
 - Verified pipeline locally with `test-gemini.ts` falling back securely to Demo mode on missing or invalid keys.
+- Fully resolved real Gemini call schema structure by providing a rigid object schema for the `@google/genai` SDK and appropriately mapped overload (503) and quota limits (429) to rate-limit fallback.
