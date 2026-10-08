@@ -170,6 +170,22 @@ describe('runPipeline', () => {
     expect(result.warnings.includes('no-key')).toBe(true);
   });
 
+  it('runs demo mode successfully when FORCE_DEMO_MODE is true', async () => {
+    vi.mocked(getMode).mockReturnValue('demo');
+    vi.mocked(getEnv).mockReturnValue({
+      GEMINI_API_KEY: 'test-key',
+      GEMINI_MODEL: 'gemini-3.8-flash',
+      FORCE_DEMO_MODE: true, // This flag skips the network call
+    });
+
+    const transcript = 'As a user I want to test so that it works.';
+    const result = await runPipeline(transcript, '127.0.0.1');
+
+    expect(result.mode).toBe('demo');
+    expect(result.warnings.includes('unknown')).toBe(true); // fallbackSpec uses 'unknown' if key exists
+    expect(mockGenerateContent).not.toHaveBeenCalled(); // PROVE no network call is made
+  });
+
   it('goes straight to demo mode with quota reason when quota is exhausted', async () => {
     mockGenerateContent.mockRejectedValue({
       status: 429,
