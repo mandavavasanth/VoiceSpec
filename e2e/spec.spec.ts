@@ -47,3 +47,40 @@ test.describe('VoiceSpec E2E', () => {
     }
   });
 });
+
+test.describe('Accessibility and Responsive', () => {
+  test.use({ reducedMotion: 'reduce' });
+
+  test('Revealed items are visible immediately with reduced motion', async ({ page }) => {
+    await page.goto('/');
+    await page.click('text=Use an example');
+    await page.click('text=Generate spec');
+
+    // Wait for the spec pane to appear
+    await expect(page.locator('section[aria-label="Specification Pane"]')).toBeVisible({
+      timeout: 10000,
+    });
+
+    const req = page.locator('text=FR-001').first();
+    await expect(req).toBeVisible();
+
+    // Check computed style for animation duration
+    const opacity = await req.evaluate((el) => window.getComputedStyle(el).opacity);
+    expect(Number(opacity)).toBeGreaterThan(0.9);
+  });
+});
+
+test.describe('Mobile Viewport (360px)', () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  test('No horizontal scroll at 360px width', async ({ page }) => {
+    await page.goto('/');
+
+    // Check if horizontal scroll exists on body or main document
+    const hasHorizontalScroll = await page.evaluate(() => {
+      return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+    });
+
+    expect(hasHorizontalScroll).toBe(false);
+  });
+});
