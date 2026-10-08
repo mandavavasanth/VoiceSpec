@@ -23,6 +23,7 @@ Use Wispr Flow to dictate your product thoughts and generate a spec instantly:
 - **Export Agent Prompt**: Generates a deterministic Markdown prompt, complete with topological sorting for tasks and backtick safety, ready to be pasted into an AI coding agent.
 - **Export GitHub Script**: Generates a `gh` CLI shell script to automatically create GitHub Issues for every task, mapping dependencies to issue mentions.
 - **Copy Issue Body**: Pick a specific task and copy its detailed issue body to your clipboard.
+- **Accessibility**: Includes semantic HTML landmarks, a skip-to-content link, full keyboard navigation, and respects user preferences for reduced-motion.
 
 ## Architecture
 
@@ -126,4 +127,4 @@ graph TD
 
 ## How it was built
 
-This application was built entirely by voice using Wispr Flow! All prompts and instructions given to the AI coding assistant (Antigravity) were dictated. Manual keyboard input was only used for pasting API keys, logging into GitHub and Vercel, and configuring deployment settings.
+Prompts to the coding agent were dictated with Wispr Flow. API keys, git and hosting logins, and the Vercel setup were entered manually; terminal commands may have been typed. The coding agent models used were Claude Opus 4.6 and Gemini 3.1 Pro.
