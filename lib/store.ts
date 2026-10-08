@@ -16,6 +16,16 @@ export interface AppState {
 
   error: string | null;
 
+  sentences: string[];
+  activeItemId: string | null;
+  activeSentenceIndex: number | null;
+  pinnedItemId: string | null;
+
+  setActiveItem: (id: string | null) => void;
+  setActiveSentence: (index: number | null) => void;
+  setPinnedItem: (id: string | null) => void;
+  updateItemText: (id: string, text: string) => void;
+
   generateSpec: () => Promise<void>;
   reset: () => void;
 }
@@ -34,6 +44,40 @@ export const useStore = create<AppState>((set, get) => ({
 
   error: null,
 
+  sentences: [],
+  activeItemId: null,
+  activeSentenceIndex: null,
+  pinnedItemId: null,
+
+  setActiveItem: (id) => set({ activeItemId: id }),
+  setActiveSentence: (index) => set({ activeSentenceIndex: index }),
+  setPinnedItem: (id) => set({ pinnedItemId: id }),
+  updateItemText: (id, text) => {
+    set((state) => {
+      if (!state.spec) return state;
+      const spec = { ...state.spec };
+
+      // Allow-list of fields that can be edited per ID prefix
+      const tryUpdate = (arr: any[], editableField: string) => {
+        const idx = arr.findIndex((i) => i.id === id);
+        if (idx !== -1) {
+          arr[idx] = { ...arr[idx], [editableField]: text };
+          return true;
+        }
+        return false;
+      };
+
+      if (id.startsWith('US-') && tryUpdate(spec.userStories, 'want')) return { spec };
+      if (id.startsWith('FR-') && tryUpdate(spec.requirements, 'text')) return { spec };
+      if (id.startsWith('RK-') && tryUpdate(spec.risks, 'text')) return { spec };
+      if (id.startsWith('OQ-') && tryUpdate(spec.openQuestions, 'question')) return { spec };
+      if (id.startsWith('AC-') && tryUpdate(spec.acceptanceCriteria, 'given')) return { spec };
+      if (id.startsWith('T-') && tryUpdate(spec.tasks, 'description')) return { spec }; // Only description is editable
+
+      return { spec };
+    });
+  },
+
   generateSpec: async () => {
     const { transcript } = get();
     if (transcript.length < 40 || transcript.length > 20000) return;
@@ -42,10 +86,14 @@ export const useStore = create<AppState>((set, get) => ({
       isGenerating: true,
       currentStage: 'Starting generation...',
       spec: null,
+      sentences: [],
       error: null,
       mode: null,
       modelUsed: undefined,
       warnings: [],
+      activeItemId: null,
+      activeSentenceIndex: null,
+      pinnedItemId: null,
     });
 
     try {
@@ -77,12 +125,13 @@ export const useStore = create<AppState>((set, get) => ({
             const event = JSON.parse(part);
             if (event.type === 'stage') {
               set({ currentStage: event.stage });
-            } else if (event.type === 'result') {
+            } else if (event.type === 'result' && event.data) {
               set({
-                spec: event.spec,
-                mode: event.mode,
-                modelUsed: event.metrics?.modelUsed,
-                warnings: event.warnings || [],
+                spec: event.data.spec,
+                sentences: event.data.sentences || [],
+                mode: event.data.mode,
+                modelUsed: event.data.metrics?.modelUsed,
+                warnings: event.data.warnings || [],
               });
             } else if (event.type === 'error') {
               set({ error: event.message });
@@ -108,6 +157,10 @@ export const useStore = create<AppState>((set, get) => ({
       warnings: [],
       error: null,
       currentStage: null,
+      sentences: [],
+      activeItemId: null,
+      activeSentenceIndex: null,
+      pinnedItemId: null,
     });
   },
 }));

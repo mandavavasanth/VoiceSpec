@@ -11,6 +11,7 @@ import { checkIntegrity } from './integrity';
 
 export interface PipelineResult {
   spec: Spec;
+  sentences: string[];
   mode: 'gemini' | 'demo' | 'fallback';
   warnings: string[];
   metrics: {
@@ -80,6 +81,7 @@ export async function runPipeline(transcript: string, ip: string): Promise<Pipel
 
   return {
     spec: finalSpec,
+    sentences,
     mode,
     warnings,
     metrics: {
