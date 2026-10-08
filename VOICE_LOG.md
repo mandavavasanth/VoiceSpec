@@ -41,3 +41,13 @@
 - Added a `Toolbar` header containing the Generate button, validation limits display, and an animated Status Badge (Gemini vs Demo) complete with warning fallback reasoning.
 - Configured secure Next.js HTTP response headers (CSP `unsafe-inline` for hydration, nosniff, referrer-policy) and verified via local production build tests.
 - Wired page to the NDJSON generating route API. Stream parsing successfully handles JSON chunking constraints and accurately displays `currentStage` progressing live.
+
+## M5: Spec UI, Interaction, and Exports
+
+- Implemented `lib/evidence-index.ts` for bidirectional mapping between specification items and transcript sentences.
+- Built `SpecPane` and `SectionCard` with inline editable text powered by `updateItemText` using a strict ID-prefix allowlist.
+- Implemented highlight coordination logic prioritizing hover/focus, then pinned items.
+- Added bidirectional scroll synchronization respecting reduced-motion settings, avoiding full page scrolls.
+- Created standalone export functions (`lib/markdown.ts`, `lib/github-export.ts`) correctly escaping labels and using heredoc syntax with dynamic safe delimiters.
+- Added export actions to `Toolbar.tsx` with copy and download functionalities wrapped in `sonner` toast notifications.
+- Verified components are correctly separated into client directives without `dangerouslySetInnerHTML`.
