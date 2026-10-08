@@ -3,10 +3,13 @@
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Wand2 } from 'lucide-react';
+import { AlertCircle, Wand2, Download, Copy, Terminal, FileText } from 'lucide-react';
+import { toast } from 'sonner';
+import { toMarkdown } from '@/lib/markdown';
+import { toIssues, toGhScript, toIssueBody } from '@/lib/github-export';
 
 export function Toolbar() {
-  const { generateSpec, isGenerating, transcript, mode, warnings, error } = useStore();
+  const { generateSpec, isGenerating, transcript, mode, warnings, error, spec } = useStore();
 
   const charCount = transcript.length;
   const isValid = charCount >= 40 && charCount <= 20000;
@@ -52,6 +55,78 @@ export function Toolbar() {
           {isGenerating ? 'Generating...' : 'Generate'}
         </Button>
       </div>
+
+      {spec && (
+        <div className="flex items-center gap-2 border-l pl-4 ml-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(toMarkdown(spec));
+                toast.success('Markdown copied to clipboard');
+              } catch {
+                toast.error('Failed to copy');
+              }
+            }}
+          >
+            <Copy className="w-4 h-4 mr-2" />
+            Copy MD
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const blob = new Blob([toMarkdown(spec)], { type: 'text/markdown' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `${spec.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md`;
+              a.click();
+              URL.revokeObjectURL(url);
+              toast.success('Markdown downloaded');
+            }}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download MD
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(toGhScript(toIssues(spec)));
+                toast.success('GitHub script copied to clipboard');
+              } catch {
+                toast.error('Failed to copy script');
+              }
+            }}
+          >
+            <Terminal className="w-4 h-4 mr-2" />
+            Copy GH Script
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              if (spec.tasks.length === 0) {
+                toast.error('No tasks to copy');
+                return;
+              }
+              try {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                await navigator.clipboard.writeText(toIssueBody(spec.tasks[0]!, spec));
+                toast.success('First task body copied');
+              } catch {
+                toast.error('Failed to copy issue body');
+              }
+            }}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Copy Issue Body
+          </Button>
+        </div>
+      )}
     </header>
   );
 }
