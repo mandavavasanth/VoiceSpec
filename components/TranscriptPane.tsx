@@ -122,7 +122,7 @@ export function TranscriptPane() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-paper p-6 lg:p-8 border-r border-border overflow-y-auto">
+    <div className="flex flex-col h-full bg-paper p-4 sm:p-6 lg:p-8 border-r border-border overflow-y-auto">
       {!spec && (
         <div className="mb-8">
           <h1 className="font-newsreader text-[2.5rem] md:text-[3.5rem] leading-[1.05] tracking-tight text-ink mb-3">

@@ -46,10 +46,19 @@ export default function Page() {
             onValueChange={setActiveTab}
             className="flex-1 flex flex-col overflow-hidden h-full"
           >
-            <div className="p-2 border-b bg-muted/20">
-              <TabsList className="grid w-full grid-cols-2 h-10">
-                <TabsTrigger value="transcript">Transcript</TabsTrigger>
-                <TabsTrigger value="spec" disabled={!spec && !isGenerating}>
+            <div className="p-3 bg-paper border-b border-border/50 shrink-0 z-10 relative">
+              <TabsList className="flex w-full h-9 p-1 bg-slate/10 rounded-controls">
+                <TabsTrigger
+                  value="transcript"
+                  className="flex-1 rounded-[4px] data-active:bg-sheet data-active:text-ink data-active:shadow-sm text-slate hover:text-ink font-medium"
+                >
+                  Transcript
+                </TabsTrigger>
+                <TabsTrigger
+                  value="spec"
+                  disabled={!spec && !isGenerating}
+                  className="flex-1 rounded-[4px] data-active:bg-sheet data-active:text-ink data-active:shadow-sm text-slate hover:text-ink font-medium"
+                >
                   Specification
                 </TabsTrigger>
               </TabsList>
@@ -64,11 +73,11 @@ export default function Page() {
             </TabsContent>
             <TabsContent
               value="spec"
-              className="flex-1 overflow-hidden m-0 p-0 h-full bg-card data-[state=inactive]:hidden data-[state=active]:flex flex-col relative"
+              className="flex-1 overflow-hidden m-0 p-0 h-full bg-paper data-[state=inactive]:hidden data-[state=active]:flex flex-col relative"
             >
               <section
                 aria-label="Specification Pane"
-                className="flex-1 overflow-auto bg-card relative"
+                className="flex-1 overflow-auto bg-paper relative"
               >
                 <div className="absolute inset-0 p-4 sm:p-6 flex flex-col">
                   {spec ? (
