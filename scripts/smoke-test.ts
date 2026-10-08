@@ -14,10 +14,10 @@ async function runSmokeTest() {
     const title = await page.title();
     console.log(`✅ Title verified: "${title}"`);
 
-    console.log('2️⃣  Clicking "Try an example"...');
-    await page.getByRole('button', { name: /Try an example/i }).click();
+    console.log('2️⃣  Clicking "Use an example"...');
+    await page.getByRole('button', { name: /Use an example/i }).click();
 
-    const textarea = page.getByPlaceholder(/Paste or type your product dictation here/i);
+    const textarea = page.getByPlaceholder(/Press the Wispr Flow key and talk/i);
     const content = await textarea.inputValue();
     if (content.length > 50) {
       console.log('✅ Example transcript loaded successfully.');
@@ -31,7 +31,7 @@ async function runSmokeTest() {
       window.localStorage.setItem('force-demo-mode', 'true');
     });
 
-    const generateBtn = page.getByRole('button', { name: 'Generate' });
+    const generateBtn = page.getByRole('button', { name: /Generate spec/i });
     await generateBtn.click();
     console.log('✅ Generation started.');
 

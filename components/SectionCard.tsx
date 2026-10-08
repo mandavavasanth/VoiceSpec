@@ -7,6 +7,7 @@ import { Edit2 } from 'lucide-react';
 
 interface SectionCardProps {
   id: string;
+  globalIndex?: number;
   badges?: string[];
   evidenceSentences?: number[];
   isHighlighted: boolean;
@@ -22,6 +23,7 @@ interface SectionCardProps {
 
 export function SectionCard({
   id,
+  globalIndex = 0,
   badges = [],
   evidenceSentences = [],
   isHighlighted,
@@ -126,7 +128,11 @@ export function SectionCard({
         onClick(id);
       }}
       onKeyDown={handleGlobalKeyDown}
-      className={`group relative flex transition-colors duration-150 outline-none
+      style={{
+        animationDuration: '400ms',
+        animationDelay: `${String(globalIndex < 12 ? globalIndex * 30 : 0)}ms`,
+      }}
+      className={`group relative flex transition-colors duration-150 outline-none animate-in fade-in slide-in-from-bottom-2 fill-mode-both motion-reduce:animate-none motion-reduce:transition-none
         ${!isLast ? 'border-b border-border/50' : ''}
         ${justSaved ? 'bg-marker transition-[background-color] duration-[600ms] ease-out motion-reduce:transition-none' : isHighlighted ? 'bg-signal/5' : 'hover:bg-slate/5'}
         ${isPinned ? 'ring-2 ring-inset ring-signal' : ''}

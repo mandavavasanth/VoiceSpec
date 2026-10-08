@@ -97,6 +97,19 @@ export function SpecPane() {
     return Array.from(evidenceIndex.itemToSentences.get(id) || []).sort((a, b) => a - b);
   };
 
+  let itemOffset = 0;
+  const usOffset = itemOffset;
+  itemOffset += spec.userStories.length;
+  const reqOffset = itemOffset;
+  itemOffset += spec.requirements.length;
+  const acOffset = itemOffset;
+  itemOffset += spec.acceptanceCriteria.length;
+  const risksOffset = itemOffset;
+  itemOffset += spec.risks.length;
+  const oqOffset = itemOffset;
+  itemOffset += spec.openQuestions.length;
+  const tasksOffset = itemOffset;
+
   return (
     <div id="spec-pane-scroll-container" className="h-full overflow-y-auto p-8 sm:p-12 lg:px-24">
       <div className="mb-12 max-w-[68ch]">
@@ -121,6 +134,7 @@ export function SpecPane() {
             <SectionCard
               key={us.id}
               id={us.id}
+              globalIndex={usOffset + i}
               isLast={i === spec.userStories.length - 1}
               editableText={us.want}
               isHighlighted={highlightedItems.has(us.id)}
@@ -141,6 +155,7 @@ export function SpecPane() {
             <SectionCard
               key={req.id}
               id={req.id}
+              globalIndex={reqOffset + i}
               isLast={i === spec.requirements.length - 1}
               badges={[req.priority]}
               editableText={req.text}
@@ -162,6 +177,7 @@ export function SpecPane() {
             <SectionCard
               key={ac.id}
               id={ac.id}
+              globalIndex={acOffset + i}
               isLast={i === spec.acceptanceCriteria.length - 1}
               badges={[ac.requirementId]}
               editableText={ac.given}
@@ -183,6 +199,7 @@ export function SpecPane() {
             <SectionCard
               key={risk.id}
               id={risk.id}
+              globalIndex={risksOffset + i}
               isLast={i === spec.risks.length - 1}
               badges={[`Severity ${risk.severity}`]}
               editableText={risk.text}
@@ -204,6 +221,7 @@ export function SpecPane() {
             <SectionCard
               key={oq.id}
               id={oq.id}
+              globalIndex={oqOffset + i}
               isLast={i === spec.openQuestions.length - 1}
               editableText={oq.question}
               isHighlighted={highlightedItems.has(oq.id)}
@@ -225,6 +243,7 @@ export function SpecPane() {
             <SectionCard
               key={task.id}
               id={task.id}
+              globalIndex={tasksOffset + i}
               isLast={i === spec.tasks.length - 1}
               badges={[task.priority, task.size]}
               editableText={task.description}
