@@ -5,8 +5,8 @@ test.describe('VoiceSpec E2E', () => {
     await page.goto('/');
 
     // Example, generate, check Demo badge and spec appears
-    await page.click('text=Try an example');
-    await page.click('text=Generate');
+    await page.click('text=Use an example');
+    await page.click('text=Generate spec');
 
     // Demo badge should appear (might be DEMO uppercase from css, but text is Demo)
     await expect(page.getByText('Demo', { exact: true })).toBeVisible({ timeout: 10000 });
@@ -19,25 +19,26 @@ test.describe('VoiceSpec E2E', () => {
     await req.hover();
 
     // Check that sentences are highlighted. The transcript sentences have ID sentence-X
-    const highlightedSentence = page.locator('[id^="sentence-"].bg-primary\\/20').first();
+    const highlightedSentence = page.locator('[id^="sentence-"].bg-marker').first();
     await expect(highlightedSentence).toBeVisible();
 
     // Press Escape
     await page.keyboard.press('Escape');
 
-    // Click a copy button and check for toast
-    await page.click('text=Copy MD');
+    // Click Export then Copy Markdown and check for toast
+    await page.click('text=Export');
+    await page.click('text=Copy Markdown');
     await expect(page.locator('text=Markdown copied to clipboard')).toBeVisible();
 
-    // Click Copy Agent Prompt button and check for toast
-    await page.click('text=Copy Agent Prompt');
+    // Click Copy agent prompt button and check for toast
+    await page.click('text=Copy agent prompt');
     await expect(page.locator('text=Agent prompt copied to clipboard')).toBeVisible();
   });
 
   test('Happy path with accessible navigation', async ({ page, isMobile }) => {
     await page.goto('/');
-    await page.click('text=Try an example');
-    await page.click('text=Generate');
+    await page.click('text=Use an example');
+    await page.click('text=Generate spec');
     await expect(page.getByText('Demo', { exact: true })).toBeVisible({ timeout: 10000 });
 
     if (isMobile) {
