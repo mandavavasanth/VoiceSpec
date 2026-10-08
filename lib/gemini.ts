@@ -259,7 +259,7 @@ export class GeminiClient implements IGeminiClient {
             : typeof err === 'object' &&
                 err !== null &&
                 typeof (err as Record<string, unknown>).message === 'string'
-              ? (err as Record<string, string>).message.toLowerCase()
+              ? ((err as Record<string, string>).message ?? '').toLowerCase()
               : '';
         if (status === 401 || status === 403 || message.includes('api key not valid'))
           throw new GeminiError('auth', 'Authentication failed');

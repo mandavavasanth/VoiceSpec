@@ -32,3 +32,12 @@
 - Created schema consistency test to ensure Zod matches the hardcoded SDK schema.
 - Verified pipeline locally with `test-gemini.ts` falling back securely to Demo mode on missing keys or exhausted retries.
 - Implemented hard quota exhaustion detection (429 with specific messages), which immediately drops to demo mode with reason code `quota` without retrying or using fallback models. Diagnostic scripts now require `--live` flag and run safely without loops.
+
+## M4: Input UI + Generation Flow + Stage Progress + Error/Retry
+
+- Integrated `zustand` to centrally manage the transcript, generation mode, warnings, errors, and streamed response state.
+- Generated `shadcn/ui` components (`button`, `badge`, `textarea`, `progress`, `alert`, `scroll-area`) to match the desired premium aesthetic seamlessly with Tailwind v4.
+- Implemented `TranscriptPane` with accurate word and character counting (enforcing the 40-20k limits), along with Cmd/Ctrl+Enter submission and an empty state Example Loader.
+- Added a `Toolbar` header containing the Generate button, validation limits display, and an animated Status Badge (Gemini vs Demo) complete with warning fallback reasoning.
+- Configured secure Next.js HTTP response headers (CSP `unsafe-inline` for hydration, nosniff, referrer-policy) and verified via local production build tests.
+- Wired page to the NDJSON generating route API. Stream parsing successfully handles JSON chunking constraints and accurately displays `currentStage` progressing live.
