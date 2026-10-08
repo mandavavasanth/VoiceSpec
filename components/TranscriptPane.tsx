@@ -101,6 +101,25 @@ export function TranscriptPane() {
     }
   };
 
+  const handleSentenceKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape') {
+      setPinnedItem(null);
+      return;
+    }
+    if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(e.key)) {
+      e.preventDefault();
+      if (activeSentenceIndex === null) {
+        setActiveSentence(0);
+        return;
+      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        setActiveSentence(Math.min(sentences.length - 1, activeSentenceIndex + 1));
+      } else {
+        setActiveSentence(Math.max(0, activeSentenceIndex - 1));
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col h-full space-y-4 p-4 border-r bg-muted/20">
       <div className="flex items-center justify-between">
@@ -118,7 +137,7 @@ export function TranscriptPane() {
 
       <div
         id="transcript-scroll-container"
-        className="relative flex-grow flex flex-col overflow-y-auto"
+        className="relative flex-grow flex flex-col overflow-y-auto focus-visible:outline-none"
         onKeyDown={handleGlobalKeyDown}
       >
         {!spec ? (
@@ -130,7 +149,7 @@ export function TranscriptPane() {
               }}
               onKeyDown={handleKeyDown}
               placeholder="Paste or type your product dictation here..."
-              className="flex-grow resize-none min-h-[300px] text-base p-4 focus-visible:ring-1"
+              className="flex-grow resize-none min-h-[300px] text-base p-4 focus-visible:ring-2 focus-visible:ring-ring"
               disabled={isGenerating}
             />
             <div className="absolute bottom-4 right-4 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded shadow-sm backdrop-blur">
@@ -139,19 +158,25 @@ export function TranscriptPane() {
           </>
         ) : (
           <div
-            className="flex-grow p-4 bg-background border rounded-md text-base leading-relaxed whitespace-pre-wrap outline-none"
+            className="flex-grow p-4 bg-background border rounded-md text-base leading-relaxed whitespace-pre-wrap outline-none focus-visible:ring-2 focus-visible:ring-ring"
             tabIndex={0}
+            role="group"
+            aria-label="Transcript Sentences"
+            aria-activedescendant={
+              activeSentenceIndex !== null ? `sentence-${String(activeSentenceIndex)}` : undefined
+            }
+            onKeyDown={handleSentenceKeyDown}
           >
             {sentences.map((sentence, idx) => {
               const isHighlighted = highlightedSentences.has(idx);
               return (
                 <span
                   key={idx}
+                  id={`sentence-${String(idx)}`}
                   ref={(el) => {
                     if (el) sentenceRefs.current.set(idx, el);
                     else sentenceRefs.current.delete(idx);
                   }}
-                  tabIndex={0}
                   onMouseEnter={() => {
                     handleSentenceHover(idx);
                   }}
@@ -165,7 +190,8 @@ export function TranscriptPane() {
                     handleSentenceHover(null);
                   }}
                   className={`transition-colors duration-200 cursor-default rounded px-1 
-                    ${isHighlighted ? 'bg-primary/20 ring-1 ring-primary/50' : 'hover:bg-muted'}`}
+                    ${isHighlighted ? 'bg-primary/20 ring-1 ring-primary/50' : 'hover:bg-muted'}
+                    ${activeSentenceIndex === idx ? 'ring-2 ring-ring' : ''}`}
                 >
                   {sentence}{' '}
                 </span>

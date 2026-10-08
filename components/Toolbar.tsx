@@ -24,7 +24,7 @@ export function Toolbar() {
     <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background px-4 sm:px-6">
       <div className="flex items-center gap-4 font-semibold">
         <Wand2 className="w-5 h-5 text-primary" />
-        <span>VoiceSpec</span>
+        <h1 className="text-lg">VoiceSpec</h1>
       </div>
 
       <div className="flex items-center gap-4">
