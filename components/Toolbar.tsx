@@ -71,7 +71,7 @@ export function Toolbar() {
             <div
               className={`px-2 py-0.5 text-xs font-semibold rounded-controls uppercase tracking-wider ${mode === 'demo' ? 'bg-slate/10 text-slate' : 'bg-signal/10 text-signal'}`}
             >
-              {mode === 'demo' ? 'Demo output' : 'Gemini'}
+              {mode === 'demo' ? 'Demo' : 'Gemini'}
             </div>
             {mode === 'demo' && warnings.length > 0 && (
               <span className="text-sm text-slate truncate max-w-[200px]" title={warnings[0]}>
