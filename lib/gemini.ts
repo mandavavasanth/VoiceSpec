@@ -21,6 +21,7 @@ const GLOBAL_DEADLINE_MS = 25000;
 const ATTEMPT_TIMEOUT_MS = 10000;
 
 export class GeminiClient implements IGeminiClient {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private ai: any;
   private mainModelName: string;
   private fallbackModelName?: string;
@@ -252,11 +253,29 @@ export class GeminiClient implements IGeminiClient {
         const status =
           errorObj['status'] ||
           (errorObj['response'] as Record<string, unknown> | undefined)?.['status'];
-        const message = err instanceof Error ? err.message.toLowerCase() : '';
+        const message =
+          err instanceof Error
+            ? err.message.toLowerCase()
+            : typeof err === 'object' &&
+                err !== null &&
+                typeof (err as Record<string, unknown>).message === 'string'
+              ? (err as Record<string, string>).message.toLowerCase()
+              : '';
         if (status === 401 || status === 403 || message.includes('api key not valid'))
           throw new GeminiError('auth', 'Authentication failed');
-        if (status === 429 || status === 503) {
-          throw new GeminiError('rate-limit', 'Rate limited or high demand');
+        if (status === 429) {
+          // Determine if it's a hard quota limit or a short-lived rate limit
+          if (
+            message.includes('quota exceeded') ||
+            message.includes('quota limits') ||
+            message.includes('resource_exhausted')
+          ) {
+            throw new GeminiError('quota', 'API quota exhausted');
+          }
+          throw new GeminiError('rate-limit', 'Rate limited');
+        }
+        if (status === 503) {
+          throw new GeminiError('rate-limit', 'High demand');
         }
 
         throw err;
@@ -298,6 +317,7 @@ export class GeminiClient implements IGeminiClient {
           const geminiErr = err as GeminiError;
           lastErrorReason = geminiErr.reason;
           if (geminiErr.reason === 'auth') throw err; // Don't retry auth
+          if (geminiErr.reason === 'quota') throw err; // Don't retry quota
           if (geminiErr.reason === 'schema' && attempt >= 2) throw err; // Only 1 repair attempt
         } else {
           lastErrorReason = 'unknown';

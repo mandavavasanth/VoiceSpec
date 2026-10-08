@@ -8,13 +8,17 @@ vi.mock('@/lib/env', () => ({
 }));
 
 const mockGenerateContent = vi.fn();
-vi.mock('@google/genai', () => ({
-  GoogleGenAI: class {
-    models = {
-      generateContent: mockGenerateContent,
-    };
-  },
-}));
+vi.mock('@google/genai', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@google/genai')>();
+  return {
+    ...actual,
+    GoogleGenAI: class {
+      models = {
+        generateContent: mockGenerateContent,
+      };
+    },
+  };
+});
 
 describe('GeminiClient', () => {
   beforeEach(() => {
@@ -50,7 +54,7 @@ describe('GeminiClient', () => {
     const client = new GeminiClient();
     const result = await client.generateSpec('prompt');
     expect(result.spec.title).toBe('Test');
-    expect(result.modelUsed).toBe('gemini-3.8-flash');
+    expect(result.modelUsed).toBe('gemini-test');
   });
 
   it('attempts repair call if zod validation fails', async () => {
@@ -79,7 +83,7 @@ describe('GeminiClient', () => {
     await vi.runAllTimersAsync();
     const result = await promise;
     expect(result.spec.title).toBe('Repaired');
-    expect(result.modelUsed).toBe('gemini-3.8-flash');
+    expect(result.modelUsed).toBe('gemini-test');
     expect(mockGenerateContent).toHaveBeenCalledTimes(2);
   });
 
@@ -97,8 +101,22 @@ describe('GeminiClient', () => {
     const err = await promise;
     expect(err).toBeInstanceOf(GeminiError);
     expect((err as GeminiError).reason).toBe('rate-limit');
-    // 1 initial + 2 retries = 3 calls
     expect(mockGenerateContent).toHaveBeenCalledTimes(3);
+  });
+
+  it('throws quota error immediately without retrying on quota exhausted', async () => {
+    const errorQuota = new Error('Quota exceeded for metric');
+    (errorQuota as Error & { status?: number }).status = 429;
+    mockGenerateContent.mockRejectedValue(errorQuota);
+
+    const client = new GeminiClient();
+    const promise = client.generateSpec('prompt').catch((e: unknown) => e);
+
+    const err = await promise;
+    expect(err).toBeInstanceOf(GeminiError);
+    expect((err as GeminiError).reason).toBe('quota');
+    // It should not retry, so it's only called once
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
   });
 
   it('throws timeout error on abort', async () => {

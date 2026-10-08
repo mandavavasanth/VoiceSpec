@@ -27,7 +27,8 @@
 - Implemented `/api/generate` route in Node runtime with `force-dynamic` and 30s max duration.
 - Added strict payload size checking (~100KB) and streaming NDJSON responses.
 - Fixed config file renames (`vitest.config.mts`, `commitlint.config.mjs`) and resolved lint/type errors.
-- Fully resolved real Gemini call schema structure by providing a rigid object schema for the `@google/genai` SDK and appropriately mapped overload (503) and quota limits (429) to rate-limit fallback.
-- Added support for `GEMINI_FALLBACK_MODEL`, which automatically activates when the main model fails due to rate limits or 503s.
+- Fully resolved real Gemini call schema structure by providing a rigid object schema for the `@google/genai` SDK and appropriately mapped overload (503) and quota limits (429) to rate-limit or quota fallback.
+- Added support for `GEMINI_FALLBACK_MODEL`, which automatically activates when the main model fails due to short-lived rate limits or 503s.
 - Created schema consistency test to ensure Zod matches the hardcoded SDK schema.
 - Verified pipeline locally with `test-gemini.ts` falling back securely to Demo mode on missing keys or exhausted retries.
+- Implemented hard quota exhaustion detection (429 with specific messages), which immediately drops to demo mode with reason code `quota` without retrying or using fallback models. Diagnostic scripts now require `--live` flag and run safely without loops.

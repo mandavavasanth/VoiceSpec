@@ -1,6 +1,7 @@
 import { Spec, Evidence } from './schema';
 
-export type FallbackReason = 'timeout' | 'schema' | 'auth' | 'rate-limit' | 'unknown' | 'no-key';
+export type FallbackReason =
+  'timeout' | 'schema' | 'auth' | 'rate-limit' | 'quota' | 'unknown' | 'no-key';
 
 /**
  * Deterministic fallback to classify sentences by cue words if generation fails.
@@ -22,7 +23,7 @@ export function fallbackSpec(
     tasks: [],
   };
 
-  const warnings = [`Fallback mode activated. Reason: ${reason}`];
+  const warnings = [reason];
 
   sentences.forEach((sentence, index) => {
     const s = sentence.toLowerCase();

@@ -106,7 +106,7 @@ describe('runPipeline', () => {
 
     expect(result.mode).toBe('gemini');
     expect(result.metrics.modelUsed).toBe('gemini-3.5-flash-lite');
-    expect(result.warnings.some((w) => w.includes('rate-limit'))).toBe(true);
+    expect(result.warnings.includes('rate-limit')).toBe(true);
   });
 
   it(
@@ -149,7 +149,7 @@ describe('runPipeline', () => {
     const result = await runPipeline(transcript, '127.0.0.1');
 
     expect(result.mode).toBe('fallback');
-    expect(result.warnings.some((w) => w.includes('timeout'))).toBe(true);
+    expect(result.warnings.includes('timeout')).toBe(true);
   });
 
   it('runs demo mode successfully with no-key reason when key is missing', async () => {
@@ -167,7 +167,21 @@ describe('runPipeline', () => {
     expect(result.spec.title).toContain('Fallback Spec');
     expect(result.spec.userStories.length).toBe(1);
     expect(result.metrics.verifiedEvidence).toBe(1); // Demo mode assigns valid evidence
-    expect(result.warnings.some((w) => w.includes('no-key'))).toBe(true);
+    expect(result.warnings.includes('no-key')).toBe(true);
+  });
+
+  it('goes straight to demo mode with quota reason when quota is exhausted', async () => {
+    mockGenerateContent.mockRejectedValue({
+      status: 429,
+      message: 'Quota exceeded for metric',
+    });
+
+    const transcript = 'This is a test transcript. It needs to be at least ten characters.';
+    const result = await runPipeline(transcript, '127.0.0.1');
+
+    expect(result.mode).toBe('fallback');
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+    expect(result.warnings.includes('quota')).toBe(true);
   });
 
   it('rejects based on rate limit', { timeout: 10000 }, async () => {

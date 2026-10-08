@@ -56,7 +56,7 @@ export async function runPipeline(transcript: string, ip: string): Promise<Pipel
       modelUsed = res.modelUsed;
       const env = getEnv();
       if (modelUsed && env.GEMINI_FALLBACK_MODEL && modelUsed === env.GEMINI_FALLBACK_MODEL) {
-        warnings.push(`Fallback model used. Reason: rate-limit`);
+        warnings.push('rate-limit');
       }
     } catch (err: unknown) {
       mode = 'fallback';

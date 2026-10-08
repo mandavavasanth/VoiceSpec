@@ -6,6 +6,14 @@ import path from 'path';
 const projectDir = path.resolve(__dirname, '..');
 loadEnvConfig(projectDir);
 
+const isLive = process.argv.includes('--live');
+if (!isLive) {
+  console.log('Diagnostic scripts must not run without an explicit --live flag.');
+  console.log('WARNING: Live runs use your daily API quota.');
+  process.exit(1);
+}
+console.log('WARNING: This live run will consume your Gemini API quota.');
+
 // Dynamic import so env is loaded before modules are evaluated
 void (async () => {
   await import('../lib/pipeline').then(async ({ runPipeline }) => {
@@ -38,39 +46,22 @@ void (async () => {
             return;
           }
 
-          let attempt = 0;
-          let success = false;
-
-          while (attempt < 3 && !success) {
-            attempt++;
-            console.log(`\nAttempt ${String(attempt)}...`);
-            try {
-              const result = await runPipeline(transcript, '127.0.0.1');
-              if (result.mode === 'gemini') {
-                success = true;
-                console.log('Mode:', result.mode);
-                console.log('Model Used:', result.metrics.modelUsed);
-                console.log('Latency:', result.metrics.latency, 'ms');
-                console.log('Verified Evidence:', result.metrics.verifiedEvidence);
-                console.log('Dropped Evidence:', result.metrics.droppedEvidence);
-                if (result.warnings.length > 0) {
-                  console.log('Warnings:', result.warnings);
-                }
-              } else {
-                console.log('Failed. Mode:', result.mode, 'Warnings:', result.warnings);
-                if (result.warnings.some((w) => w.includes('rate-limit')) && attempt < 3) {
-                  console.log('Waiting 2 minutes before retry...');
-                  await new Promise((resolve) => setTimeout(resolve, 120000));
-                }
+          try {
+            const result = await runPipeline(transcript, '127.0.0.1');
+            if (result.mode === 'gemini') {
+              console.log('Mode:', result.mode);
+              console.log('Model Used:', result.metrics.modelUsed);
+              console.log('Latency:', result.metrics.latency, 'ms');
+              console.log('Verified Evidence:', result.metrics.verifiedEvidence);
+              console.log('Dropped Evidence:', result.metrics.droppedEvidence);
+              if (result.warnings.length > 0) {
+                console.log('Warnings:', result.warnings);
               }
-            } catch (err: unknown) {
-              console.error('Unknown error:', err);
+            } else {
+              console.log('Failed. Mode:', result.mode, 'Warnings:', result.warnings);
             }
-          }
-
-          if (!success) {
-            console.log('\nAll 3 tries failed.');
-            console.log('Fallback model name to use: gemini-2.5-flash');
+          } catch (err: unknown) {
+            console.error('Unknown error:', err);
           }
         }
 
