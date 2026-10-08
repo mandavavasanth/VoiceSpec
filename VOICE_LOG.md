@@ -60,3 +60,11 @@
 - Converted Transcript pane sentences to a single tab stop, controllable entirely by arrow keys leveraging `aria-activedescendant` for proper screen reader announcement.
 - Upgraded the E2E testing framework (`playwright`) configuring `FORCE_DEMO_MODE` dynamically across ports to bypass Gemini APIs strictly. Added a full CI/CD step ensuring UI stability on headless Chrome.
 - Added a "Copy Agent Prompt" feature that transforms the current Spec into a deterministic prompt containing goals, tasks topologically sorted with a cycle-fallback, requirements, and instructions for an external coding agent.
+
+## M7: Launch & Docs
+
+- Moved `toAgentPrompt` into its own module (`lib/agent-prompt.ts`) and updated the tests.
+- Wrote a comprehensive `README.md` with features, setup steps, environment variable tables, deployment instructions, architecture and pipeline Mermaid diagrams, limitations, roadmap, and a note about how this project was entirely voice-dictated using Wispr Flow.
+- Added MIT License and removed unused code and `console.log` statements.
+- Validated the codebase through ESLint, TypeScript, Vitest, and Playwright across a full CI loop and verified the clean state.
+- Performed a clean clone and install in a separate directory to ensure zero friction onboarding.

@@ -1,39 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VoiceSpec
 
-## Getting Started
+Transform raw product discovery transcripts into structured, developer-ready specifications instantly. Say goodbye to manual spec writing and hello to automated provenance.
 
-First, run the development server:
+**Live Demo:** [Placeholder URL]
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+![Hero Screenshot](docs/hero.png)
+![Demo GIF](docs/demo.gif)
+
+## Quickstart with Wispr Flow
+
+Use Wispr Flow to dictate your product thoughts and generate a spec instantly:
+
+1. **Open Wispr Flow** and start a new dictation.
+2. **Dictate your thoughts**:
+   > "We need to add a dark mode toggle to the settings page. It's really important for users who work at night. P0 priority. It should switch the theme across the entire app. The biggest risk is a flash of unstyled content on load. Add an acceptance criterion that the theme preference must be saved to local storage."
+3. **Paste** the dictation into VoiceSpec and hit Generate.
+
+## Features
+
+- **Provenance Highlighting**: Every requirement, user story, task, and risk in the generated specification is linked directly to the original transcript sentence that inspired it. Click a spec item to highlight its source in the transcript.
+- **Export to Markdown**: Standard Markdown export of the entire specification.
+- **Export Agent Prompt**: Generates a deterministic Markdown prompt, complete with topological sorting for tasks and backtick safety, ready to be pasted into an AI coding agent.
+- **Export GitHub Script**: Generates a `gh` CLI shell script to automatically create GitHub Issues for every task, mapping dependencies to issue mentions.
+- **Copy Issue Body**: Pick a specific task and copy its detailed issue body to your clipboard.
+
+## Architecture
+
+```mermaid
+graph TD
+    Client[Client UI - React/Zustand]
+    API[Next.js API Route - /api/generate]
+    Pipeline[Pipeline Orchestrator]
+    Gemini[Gemini API Module]
+    Export[Export Modules - MD, GH, Agent]
+
+    Client -->|POST /api/generate| API
+    API --> Pipeline
+    Pipeline --> Gemini
+    Gemini -->|HTTP| Google[Google Gemini]
+    Client -->|Generate| Export
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Pipeline
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```mermaid
+graph TD
+    Input[Raw Transcript] --> Normalize[Normalize & Extract Sentences]
+    Normalize --> Prompt[Build Numbered Prompt]
+    Prompt --> GeminiCall{Call Gemini API}
+    GeminiCall -->|Success| Stream[Stream Response]
+    GeminiCall -->|429/503| Retry[Retry w/ Backoff]
+    Retry --> FallbackModel{Fallback Model?}
+    FallbackModel -->|Yes| GeminiCall2{Call Fallback Model}
+    FallbackModel -->|No| Demo[Demo Mode]
+    GeminiCall2 -->|Success| Stream
+    GeminiCall2 -->|Fail| Demo
+    GeminiCall -->|Quota Exhausted| Demo
+    Stream --> Parse[Parse JSON Stream]
+    Parse --> Validate[Validate against Zod Schema]
+    Validate --> Output[Structured Spec]
+    Demo --> Output
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/mandavavasanth/VoiceSpec.git
+   cd VoiceSpec
+   ```
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+3. **Configure environment variables:**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Add your `GEMINI_API_KEY` to `.env.local`.
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+## Environment Variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable                | Description                                                                                              |
+| ----------------------- | -------------------------------------------------------------------------------------------------------- |
+| `GEMINI_API_KEY`        | Your Google Gemini API key. Required for live generation.                                                |
+| `GEMINI_MODEL`          | The primary Gemini model to use (default: `gemini-1.5-flash-8b`).                                        |
+| `GEMINI_FALLBACK_MODEL` | An optional fallback model to use if the primary model fails due to capacity (e.g., `gemini-1.5-flash`). |
+| `FORCE_DEMO_MODE`       | Set to `true` to force demo mode and prevent real network calls to Gemini (used in tests/CI).            |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Vercel Deployment
 
-## Deploy on Vercel
+1. Push your code to GitHub.
+2. Go to Vercel and import the repository.
+3. In the environment variables section, add `GEMINI_API_KEY`, `GEMINI_MODEL`, and optionally `GEMINI_FALLBACK_MODEL`.
+4. Deploy!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Design Decisions and Tradeoffs
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Client-side State**: Zustand is used for client-side state management because it provides a lightweight, predictable store without the boilerplate of Redux, perfectly suiting a single-page spec editor.
+- **Serverless API**: Next.js App Router API endpoints provide a secure server environment to handle the Gemini API key without exposing it to the client.
+- **Streaming JSON**: The API parses the LLM stream chunk-by-chunk and repairs partial JSON payloads so the user sees results progressively rather than waiting for the entire spec to generate.
+- **Resilience**: The pipeline will always output a valid spec. If the Gemini API is down, rate-limited, or if the user exhausts their free quota, the application automatically falls back to a deterministic "Demo Mode".
 
 ## Security Notes
-**Content Security Policy (CSP)**: `unsafe-inline` is allowed for scripts in the CSP to support Next.js hydration and dynamic injection by third-party extensions in this environment.
+
+- **Content Security Policy**: The application uses an `unsafe-inline` script policy. This is currently required by Next.js in development and for certain hydration mechanisms, though it is a known tradeoff.
+- **No Secrets Tracked**: API keys are strictly kept out of version control and are only accessed server-side.
+
+## Limitations
+
+- **Gemini Free Quota**: Because this app relies on the free tier of the Gemini API, heavy usage may result in a `429 Quota Exhausted` error. When this happens, the app will gracefully degrade to Demo Mode output.
+- **Capacity Issues**: 503 errors from overloaded Google servers are handled via a fallback model and retries, but if all attempts fail, it will also fall back to Demo Mode.
+- **Rate Limiting**: An in-memory token bucket rate limiter is used per-instance (2 requests/min). In a serverless environment like Vercel, this is per-lambda-instance, not global.
+- **Length Limit**: Transcripts are capped at 20,000 characters to fit well within the context window and typical processing times.
+
+## Roadmap
+
+- [ ] Dark mode toggle
+- [ ] Spec history
+- [ ] Transcript diffing
+
+## How it was built
+
+This application was built entirely by voice using Wispr Flow! All prompts and instructions given to the AI coding assistant (Antigravity) were dictated. Manual keyboard input was only used for pasting API keys, logging into GitHub and Vercel, and configuring deployment settings.

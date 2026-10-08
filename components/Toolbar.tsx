@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Wand2, Download, Copy, Terminal, FileText, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 import { toMarkdown } from '@/lib/markdown';
-import { toAgentPrompt } from '@/lib/prompt';
+import { toAgentPrompt } from '@/lib/agent-prompt';
 import { toIssues, toGhScript, toIssueBody } from '@/lib/github-export';
 import {
   DropdownMenu,
