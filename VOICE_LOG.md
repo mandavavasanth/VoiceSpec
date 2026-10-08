@@ -51,3 +51,11 @@
 - Created standalone export functions (`lib/markdown.ts`, `lib/github-export.ts`) correctly escaping labels and using heredoc syntax with dynamic safe delimiters.
 - Added export actions to `Toolbar.tsx` with copy and download functionalities wrapped in `sonner` toast notifications.
 - Verified components are correctly separated into client directives without `dangerouslySetInnerHTML`.
+
+## M6: Responsive, Accessibility, and E2E
+
+- Implemented responsive mobile layout using an accessible Tab interface below 768px, ensuring the "Generate" action correctly switches focus to the Specification tab.
+- Integrated accessibility standards: defined semantic landmarks (`<header>`, `<main>`, `<section>`), a single `h1` heading, a visible "Skip to content" link, and visible focus rings meeting contrast criteria.
+- Ensured animations inside the Specification pane respect the `prefers-reduced-motion` media query using `motion-reduce` utilities.
+- Converted Transcript pane sentences to a single tab stop, controllable entirely by arrow keys leveraging `aria-activedescendant` for proper screen reader announcement.
+- Upgraded the E2E testing framework (`playwright`) configuring `FORCE_DEMO_MODE` dynamically across ports to bypass Gemini APIs strictly. Added a full CI/CD step ensuring UI stability on headless Chrome.
