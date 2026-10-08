@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
-import { Geist } from 'next/font/google';
+import { Newsreader, Instrument_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/sonner';
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
+const newsreader = Newsreader({ subsets: ['latin'], variable: '--font-newsreader' });
+const instrumentSans = Instrument_Sans({ subsets: ['latin'], variable: '--font-instrument' });
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
 export const metadata: Metadata = {
   title: 'VoiceSpec',
@@ -17,8 +19,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn('font-sans', geist.variable)}>
-      <body className="antialiased min-h-screen bg-white text-slate-900 font-sans">
+    <html
+      lang="en"
+      className={cn(newsreader.variable, instrumentSans.variable, jetbrainsMono.variable)}
+    >
+      <body className="antialiased min-h-screen bg-paper text-ink font-instrument">
         {children}
         <Toaster />
       </body>
