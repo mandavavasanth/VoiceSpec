@@ -121,95 +121,131 @@ export function TranscriptPane() {
   };
 
   return (
-    <div className="flex flex-col h-full space-y-4 p-4 border-r bg-muted/20">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold tracking-tight">Dictation</h2>
-        {!spec ? (
-          <Button variant="outline" size="sm" onClick={loadExample} disabled={isGenerating}>
-            Try an example
-          </Button>
-        ) : (
-          <Button variant="outline" size="sm" onClick={reset}>
+    <div className="flex flex-col h-full bg-paper p-6 lg:p-8 border-r border-border overflow-y-auto">
+      {!spec && (
+        <div className="mb-8">
+          <h1 className="font-newsreader text-[2.5rem] md:text-[3.5rem] leading-[1.05] tracking-tight text-ink mb-3">
+            Say it messy.
+            <br />
+            Get a spec you can trace.
+          </h1>
+          <p className="text-slate text-base md:text-lg">
+            Convert voice dictation into structured product specs.
+          </p>
+        </div>
+      )}
+
+      {spec && (
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-slate uppercase tracking-wider">Transcript</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={reset}
+            className="rounded-controls shadow-sm"
+          >
             Edit transcript
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       <div
         id="transcript-scroll-container"
-        className="relative flex-grow flex flex-col overflow-y-auto focus-visible:outline-none"
+        className="relative flex-grow flex flex-col focus-visible:outline-none"
         onKeyDown={handleGlobalKeyDown}
       >
         {!spec ? (
-          <>
+          <div className="flex flex-col flex-grow relative">
+            <div className="absolute inset-0 bg-sheet rounded-sheet shadow-sheet pointer-events-none" />
             <Textarea
               value={transcript}
               onChange={(e) => {
                 setTranscript(e.target.value);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Paste or type your product dictation here..."
-              className="flex-grow resize-none min-h-[300px] text-base p-4 focus-visible:ring-2 focus-visible:ring-ring"
+              placeholder="Press the Wispr Flow key and talk..."
+              className="relative z-10 flex-grow resize-none font-newsreader text-[18px] leading-[1.7] max-w-[68ch] mx-auto p-6 md:p-8 bg-transparent border-none focus-visible:ring-0 shadow-none"
               disabled={isGenerating}
             />
-            <div className="absolute bottom-4 right-4 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded shadow-sm backdrop-blur">
-              {wordCount} words • {charCount} chars
-            </div>
-          </>
+            {charCount > 0 && (
+              <div className="absolute bottom-4 right-4 z-10 text-xs text-slate bg-sheet/80 px-2 py-1 rounded backdrop-blur">
+                {wordCount} words • {charCount} chars
+              </div>
+            )}
+          </div>
         ) : (
-          <div
-            className="flex-grow p-4 bg-background border rounded-md text-base leading-relaxed whitespace-pre-wrap outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            tabIndex={0}
-            role="group"
-            aria-label="Transcript Sentences"
-            aria-activedescendant={
-              activeSentenceIndex !== null ? `sentence-${String(activeSentenceIndex)}` : undefined
-            }
-            onKeyDown={handleSentenceKeyDown}
-          >
-            {sentences.map((sentence, idx) => {
-              const isHighlighted = highlightedSentences.has(idx);
-              return (
-                <span
-                  key={idx}
-                  id={`sentence-${String(idx)}`}
-                  ref={(el) => {
-                    if (el) sentenceRefs.current.set(idx, el);
-                    else sentenceRefs.current.delete(idx);
-                  }}
-                  onMouseEnter={() => {
-                    handleSentenceHover(idx);
-                  }}
-                  onMouseLeave={() => {
-                    handleSentenceHover(null);
-                  }}
-                  onFocus={() => {
-                    handleSentenceHover(idx);
-                  }}
-                  onBlur={() => {
-                    handleSentenceHover(null);
-                  }}
-                  className={`transition-colors duration-200 cursor-default rounded px-1 
-                    ${isHighlighted ? 'bg-primary/20 ring-1 ring-primary/50' : 'hover:bg-muted'}
-                    ${activeSentenceIndex === idx ? 'ring-2 ring-ring' : ''}`}
-                >
-                  {sentence}{' '}
-                </span>
-              );
-            })}
+          <div className="flex-grow relative bg-sheet rounded-sheet shadow-sheet overflow-y-auto">
+            <div
+              className="font-newsreader text-[18px] leading-[1.7] max-w-[68ch] mx-auto p-6 md:p-8 outline-none"
+              tabIndex={0}
+              role="group"
+              aria-label="Transcript Sentences"
+              aria-activedescendant={
+                activeSentenceIndex !== null ? `sentence-${String(activeSentenceIndex)}` : undefined
+              }
+              onKeyDown={handleSentenceKeyDown}
+            >
+              {sentences.map((sentence, idx) => {
+                const isHighlighted = highlightedSentences.has(idx);
+                return (
+                  <span
+                    key={idx}
+                    id={`sentence-${String(idx)}`}
+                    ref={(el) => {
+                      if (el) sentenceRefs.current.set(idx, el);
+                      else sentenceRefs.current.delete(idx);
+                    }}
+                    onMouseEnter={() => {
+                      handleSentenceHover(idx);
+                    }}
+                    onMouseLeave={() => {
+                      handleSentenceHover(null);
+                    }}
+                    onFocus={() => {
+                      handleSentenceHover(idx);
+                    }}
+                    onBlur={() => {
+                      handleSentenceHover(null);
+                    }}
+                    className={`transition-colors duration-200 cursor-default rounded px-1 
+                      ${isHighlighted ? 'bg-marker text-ink' : 'hover:bg-slate/10'}
+                      ${activeSentenceIndex === idx ? 'ring-2 ring-signal ring-offset-2' : ''}`}
+                  >
+                    {sentence}{' '}
+                  </span>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
 
       {!spec && showWarning && (
-        <div className="text-sm text-destructive">
+        <div className="mt-4 text-sm text-destructive">
           Transcript must be between 40 and 20,000 characters.
         </div>
       )}
 
       {!spec && (
-        <div className="text-xs text-muted-foreground text-center">
-          Press <kbd className="font-mono bg-muted px-1 rounded">⌘ Enter</kbd> to generate
+        <div className="mt-6 flex flex-col sm:flex-row items-center gap-3 w-full">
+          <Button
+            onClick={() => void generateSpec()}
+            disabled={!isValid || isGenerating}
+            className="w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
+          >
+            Generate spec
+            <span className="text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
+              ⌘ Enter
+            </span>
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={loadExample}
+            disabled={isGenerating}
+            className="w-full sm:w-auto text-slate hover:text-ink rounded-controls h-11 px-6"
+          >
+            Use an example
+          </Button>
         </div>
       )}
     </div>

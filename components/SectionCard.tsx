@@ -1,34 +1,32 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, ChevronRight, Edit2 } from 'lucide-react';
+import { Edit2 } from 'lucide-react';
 
 interface SectionCardProps {
   id: string;
-  title: string;
   badges?: string[];
-  evidenceSentences?: number[]; // array of sentence indices for this item
+  evidenceSentences?: number[];
   isHighlighted: boolean;
   isPinned: boolean;
+  isLast?: boolean;
   onHover: (id: string | null) => void;
-  onClick: (id: string) => void; // pinning
+  onClick: (id: string) => void;
   onClearPin: () => void;
   onSave: (id: string, newText: string) => void;
   children: React.ReactNode;
   editableText?: string;
-  // For ACs, they don't have their own evidence. We just pass their requirement's sentences via the index.
 }
 
 export function SectionCard({
   id,
-  title,
   badges = [],
+  evidenceSentences = [],
   isHighlighted,
   isPinned,
+  isLast = false,
   onHover,
   onClick,
   onClearPin,
@@ -38,7 +36,6 @@ export function SectionCard({
 }: SectionCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draftText, setDraftText] = useState(editableText || '');
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const elRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +49,6 @@ export function SectionCard({
         const isVisible = rect.top >= containerRect.top && rect.bottom <= containerRect.bottom;
         if (!isVisible) {
           const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          // Calculate offset taking into account that the element might be nested
           let offsetTop = 0;
           let current = el as HTMLElement | null;
           while (current !== null && current !== container) {
@@ -87,6 +83,14 @@ export function SectionCard({
     }
   };
 
+  // Convert priority to specific styling if known
+  const getBadgeVariant = (text: string) => {
+    const t = text.toLowerCase();
+    if (t === 'p0' || t.includes('p0')) return 'default'; // P0 filled ink (simulated by default if mapped)
+    if (t === 'p1' || t.includes('p1')) return 'outline'; // P1 outlined
+    return 'secondary'; // P2 slate text
+  };
+
   return (
     <div
       ref={elRef}
@@ -105,80 +109,92 @@ export function SectionCard({
         if (!isEditing) onHover(null);
       }}
       onClick={(e) => {
-        // don't pin if clicking the edit input or button
-        if ((e.target as HTMLElement).closest('button, input')) return;
+        if ((e.target as HTMLElement).closest('button, input, a')) return;
         onClick(id);
       }}
       onKeyDown={handleGlobalKeyDown}
-      className={`relative mb-2 transition-colors duration-200 cursor-default outline-none rounded-md
-        ${isHighlighted ? 'bg-primary/10 border-l-4 border-primary ring-2 ring-primary/50' : 'border-l-4 border-transparent'}
-        ${isPinned ? 'ring-2 ring-primary' : ''}
+      className={`group relative flex transition-colors duration-200 outline-none
+        ${!isLast ? 'border-b border-border/50' : ''}
+        ${isHighlighted ? 'bg-signal/5' : 'hover:bg-slate/5'}
+        ${isPinned ? 'ring-2 ring-inset ring-signal' : ''}
+        ${isHighlighted && !isPinned ? 'ring-1 ring-inset ring-signal/20' : ''}
       `}
     >
-      <Card className="shadow-sm">
-        <CardContent className="p-3">
-          <div className="flex items-start gap-2">
-            <button
-              onClick={() => {
-                setIsCollapsed(!isCollapsed);
-              }}
-              className="mt-1 text-muted-foreground hover:text-foreground shrink-0"
-              aria-label={isCollapsed ? 'Expand' : 'Collapse'}
-            >
-              {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
-            </button>
-            <div className="flex-grow min-w-0">
-              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className="font-semibold text-sm">{id}</span>
-                {badges.map((b) => (
-                  <Badge key={b} variant="secondary" className="text-[10px] px-1 py-0 h-4">
-                    {b}
-                  </Badge>
-                ))}
-                {editableText && !isEditing && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-5 w-5 ml-auto text-muted-foreground"
-                    onClick={(e: React.MouseEvent) => {
-                      e.stopPropagation();
-                      setDraftText(editableText);
-                      setIsEditing(true);
-                    }}
-                  >
-                    <Edit2 size={12} />
-                  </Button>
-                )}
-              </div>
+      {/* Left gutter with ID */}
+      <div className="w-16 sm:w-20 shrink-0 py-3 pl-3 sm:pl-4 text-xs font-mono text-slate/70">
+        {id}
+      </div>
 
-              {!isCollapsed && (
-                <div className="text-sm">
-                  {isEditing ? (
-                    <Input
-                      autoFocus
-                      value={draftText}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        setDraftText(e.target.value);
-                      }}
-                      onKeyDown={handleKeyDown}
-                      onBlur={() => {
-                        onSave(id, draftText);
-                        setIsEditing(false);
-                      }}
-                      className="h-7 text-sm py-1 px-2"
-                    />
-                  ) : (
-                    <div className="break-words">
-                      <span className="font-medium mr-1">{title}:</span>
-                      {children}
-                    </div>
-                  )}
+      <div className="flex-1 py-3 pr-3 sm:pr-4 flex gap-3 min-w-0">
+        {/* Priority Chips */}
+        {badges.length > 0 && (
+          <div className="flex shrink-0 flex-col gap-1 mt-0.5">
+            {badges.map((b) => {
+              const v = getBadgeVariant(b);
+              let styleClass =
+                'rounded-controls text-[10px] font-semibold h-5 px-1.5 uppercase tracking-wider flex items-center justify-center whitespace-nowrap';
+
+              if (v === 'default') styleClass += ' bg-ink text-sheet';
+              else if (v === 'outline')
+                styleClass += ' border border-slate text-ink bg-transparent';
+              else styleClass += ' bg-slate/10 text-slate';
+
+              return (
+                <div key={b} className={styleClass}>
+                  {b}
                 </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="flex-1 min-w-0 text-[15px] leading-snug">
+          {isEditing ? (
+            <Input
+              autoFocus
+              value={draftText}
+              onChange={(e) => {
+                setDraftText(e.target.value);
+              }}
+              onKeyDown={handleKeyDown}
+              onBlur={() => {
+                onSave(id, draftText);
+                setIsEditing(false);
+              }}
+              className="h-8 text-[15px] py-1 px-2 mb-1 shadow-sm rounded-controls font-instrument focus-visible:ring-signal focus-visible:ring-offset-1"
+            />
+          ) : (
+            <div className="break-words text-ink font-instrument">
+              {children}
+              {evidenceSentences.length > 0 && (
+                <sup className="ml-1 text-xs text-signal/80 font-mono tracking-tighter cursor-default select-none pointer-events-none">
+                  [{evidenceSentences.join(',')}]
+                </sup>
               )}
             </div>
+          )}
+        </div>
+
+        {/* Edit Button */}
+        {editableText && !isEditing && (
+          <div className="shrink-0 flex opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-slate hover:text-ink rounded-controls"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDraftText(editableText);
+                setIsEditing(true);
+              }}
+              aria-label={`Edit ${id}`}
+            >
+              <Edit2 size={14} />
+            </Button>
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
     </div>
   );
 }

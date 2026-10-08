@@ -88,12 +88,15 @@ export default function Page() {
           </Tabs>
         ) : (
           <div className="grid md:grid-cols-2 h-full overflow-hidden">
-            <section aria-label="Transcript Pane" className="flex-1 overflow-hidden border-r">
+            <section
+              aria-label="Transcript Pane"
+              className="flex-1 overflow-hidden border-r border-border"
+            >
               <TranscriptPane />
             </section>
             <section
               aria-label="Specification Pane"
-              className="relative flex-1 overflow-auto bg-card"
+              className="relative flex-1 overflow-auto bg-paper"
             >
               <div className="absolute inset-0 p-6 flex flex-col">
                 {isGenerating && (
@@ -103,7 +106,7 @@ export default function Page() {
                 )}
 
                 {spec ? (
-                  <div className="animate-in fade-in slide-in-from-bottom-4 flex-1 overflow-hidden flex flex-col -mx-6 -my-6 motion-reduce:animate-none motion-reduce:transition-none">
+                  <div className="animate-in fade-in flex-1 flex flex-col motion-reduce:animate-none motion-reduce:transition-none">
                     <SpecPane />
                   </div>
                 ) : (
