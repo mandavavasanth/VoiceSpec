@@ -109,7 +109,7 @@ void (async () => {
       console.log(`Mode: ${result.mode}`);
       console.log(`Model Used: ${result.metrics.modelUsed}`);
       console.log(`Latency: ${result.metrics.latency}ms`);
-      console.log(`Attempts: ${result.metrics.attempts || 1}`);
+      console.log(`Attempts: ${(result.metrics as any).attempts || 1}`);
 
       if (result.mode === 'gemini') {
         console.log(`Verified Evidence: ${result.metrics.verifiedEvidence}`);
