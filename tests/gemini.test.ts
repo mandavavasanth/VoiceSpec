@@ -122,13 +122,8 @@ describe('GeminiClient', () => {
   it('throws timeout error on abort', async () => {
     mockGenerateContent.mockImplementation(
       () =>
-        new Promise((_, reject) => {
-          const err = new Error('Abort');
-          err.name = 'AbortError';
-          // Simulate taking too long
-          setTimeout(() => {
-            reject(err);
-          }, 11000);
+        new Promise(() => {
+          // Simulate taking forever so the timeout wins
         }),
     );
 

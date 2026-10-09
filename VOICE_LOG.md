@@ -77,3 +77,12 @@
 - Drew an animated SVG provenance thread connecting the active transcript sentence to the active spec item.
 - Staggered the initial fade-in of transcript sentences and delayed the spec pane for a sophisticated reveal animation.
 - Applied a segmented control pattern for mobile layout navigation.
+
+## Finalization
+
+- Replaced all mentions of legacy models with gemini-3.6-flash and gemini-3.8-flash.
+- Updated Gemini per-attempt timeout to 14 seconds to handle API latency.
+- Improved Demo mode fallback to dynamically generate a spec title from the transcript.
+- Updated environment variable handling to correctly treat whitespace-only API keys as empty.
+- Performed complete browser verification ensuring accessibility, exports, and layout integrity across desktop and mobile.
+- Ran full hygiene, security, and Lighthouse audits to ensure production readiness.

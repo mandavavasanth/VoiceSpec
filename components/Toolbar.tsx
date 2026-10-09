@@ -53,7 +53,7 @@ export function Toolbar() {
     <header className="sticky top-0 z-10 flex h-12 items-center justify-between border-b border-border bg-paper px-4 sm:px-6 shrink-0">
       <div className="flex items-center gap-3 font-semibold text-ink font-newsreader">
         <Wand2 className="w-5 h-5 text-signal" />
-        <h1 className="text-xl tracking-tight">VoiceSpec</h1>
+        <span className="text-xl tracking-tight font-bold">VoiceSpec</span>
       </div>
 
       <div className="flex items-center gap-3 font-instrument">
