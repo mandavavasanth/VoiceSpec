@@ -7,6 +7,9 @@ import { useMemo, useRef, useEffect, KeyboardEvent, useState } from 'react';
 import { buildEvidenceIndex, getHighlightPriority } from '@/lib/evidence-index';
 import { ProgressStages } from '@/components/ProgressStages';
 import { isDictationBurst } from '@/lib/ui-utils';
+import { BorderBeam } from 'border-beam';
+import { ThinkingOrb } from 'thinking-orbs';
+import { MetalFx } from 'metal-fx';
 
 export function TranscriptPane() {
   const {
@@ -31,6 +34,22 @@ export function TranscriptPane() {
 
   const previousTranscriptRef = useRef(transcript);
   const [burstKey, setBurstKey] = useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - rule not found in standard but just in case
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPrefersReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+    mediaQuery.addEventListener('change', onChange);
+    return () => {
+      mediaQuery.removeEventListener('change', onChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (isDictationBurst(previousTranscriptRef.current, transcript)) {
@@ -168,30 +187,68 @@ export function TranscriptPane() {
         onKeyDown={handleGlobalKeyDown}
       >
         {!spec ? (
-          <div className="flex flex-col flex-grow relative overflow-hidden rounded-sheet">
-            <div className="absolute inset-0 bg-sheet rounded-sheet shadow-sheet pointer-events-none" />
-            {burstKey > 0 && (
-              <div
-                key={burstKey}
-                className="absolute left-0 top-0 w-[3px] bg-marker animate-pulse-down pointer-events-none z-20"
-              />
-            )}
-            <Textarea
-              value={transcript}
-              onChange={(e) => {
-                setTranscript(e.target.value);
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder="Press the Wispr Flow key and talk..."
-              className="relative z-10 flex-grow resize-none font-newsreader text-[18px] leading-[1.7] max-w-[68ch] mx-auto p-6 md:p-8 bg-transparent border-none focus-visible:ring-0 shadow-none"
-              disabled={isGenerating}
-            />
-            {charCount > 0 && (
-              <div className="absolute bottom-4 right-4 z-10 text-xs text-slate bg-sheet/80 px-2 py-1 rounded backdrop-blur">
-                {wordCount} words • {charCount} chars
+          isGenerating && !prefersReducedMotion ? (
+            <BorderBeam
+              active={isGenerating}
+              theme="light"
+              colorVariant="ocean"
+              strength={0.6}
+              size="line"
+              style={{ borderRadius: 14, display: 'flex', flexDirection: 'column', flexGrow: 1 }}
+            >
+              <div className="flex flex-col flex-grow relative overflow-hidden rounded-sheet h-full w-full">
+                <div className="absolute inset-0 bg-sheet rounded-sheet shadow-sheet pointer-events-none" />
+                {burstKey > 0 && (
+                  <div
+                    key={burstKey}
+                    className="absolute left-0 top-0 w-[3px] bg-marker animate-pulse-down pointer-events-none z-20"
+                  />
+                )}
+                <Textarea
+                  value={transcript}
+                  onChange={(e) => {
+                    setTranscript(e.target.value);
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Press the Wispr Flow key and talk..."
+                  className="relative z-10 flex-grow resize-none font-newsreader text-[18px] leading-[1.7] max-w-[68ch] mx-auto p-6 md:p-8 bg-transparent border-none focus-visible:ring-0 shadow-none"
+                  disabled={isGenerating}
+                />
+                {charCount > 0 && (
+                  <div className="absolute bottom-4 right-4 z-10 text-xs text-slate bg-sheet/80 px-2 py-1 rounded backdrop-blur">
+                    {wordCount} words • {charCount} chars
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </BorderBeam>
+          ) : (
+            <div
+              className={`flex flex-col flex-grow relative overflow-hidden rounded-sheet ${isGenerating && prefersReducedMotion ? 'ring-2 ring-signal ring-offset-2' : ''}`}
+            >
+              <div className="absolute inset-0 bg-sheet rounded-sheet shadow-sheet pointer-events-none" />
+              {burstKey > 0 && (
+                <div
+                  key={burstKey}
+                  className="absolute left-0 top-0 w-[3px] bg-marker animate-pulse-down pointer-events-none z-20"
+                />
+              )}
+              <Textarea
+                value={transcript}
+                onChange={(e) => {
+                  setTranscript(e.target.value);
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder="Press the Wispr Flow key and talk..."
+                className="relative z-10 flex-grow resize-none font-newsreader text-[18px] leading-[1.7] max-w-[68ch] mx-auto p-6 md:p-8 bg-transparent border-none focus-visible:ring-0 shadow-none"
+                disabled={isGenerating}
+              />
+              {charCount > 0 && (
+                <div className="absolute bottom-4 right-4 z-10 text-xs text-slate bg-sheet/80 px-2 py-1 rounded backdrop-blur">
+                  {wordCount} words • {charCount} chars
+                </div>
+              )}
+            </div>
+          )
         ) : (
           <div className="flex-grow relative bg-sheet rounded-sheet shadow-sheet overflow-y-auto">
             <div
@@ -252,36 +309,57 @@ export function TranscriptPane() {
       {!spec && (
         <div className="mt-6">
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-            <Button
-              onClick={() => void generateSpec()}
-              disabled={!isValid || isGenerating}
-              className="relative overflow-hidden w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
-            >
-              {isGenerating ? (
-                <>
-                  <span className="relative z-10">{currentStage || 'Generating...'}</span>
-                  <div
-                    className="absolute bottom-0 left-0 h-[2px] bg-sheet/40 transition-all duration-300 ease-out"
-                    style={{
-                      width:
-                        String(currentStage).includes('Verifying') ||
-                        String(currentStage).includes('Checking')
-                          ? '90%'
-                          : String(currentStage).includes('Generating')
-                            ? '60%'
-                            : '30%',
-                    }}
-                  />
-                </>
-              ) : (
-                <>
-                  Generate spec
-                  <span className="text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
+            {!isGenerating && !prefersReducedMotion ? (
+              <MetalFx variant="button" theme="light" preset="silver">
+                <Button
+                  onClick={() => void generateSpec()}
+                  disabled={!isValid || isGenerating}
+                  className="relative overflow-hidden w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
+                >
+                  <span className="relative z-10">Generate spec</span>
+                  <span className="relative z-10 text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
                     ⌘ Enter
                   </span>
-                </>
-              )}
-            </Button>
+                </Button>
+              </MetalFx>
+            ) : (
+              <Button
+                onClick={() => void generateSpec()}
+                disabled={!isValid || isGenerating}
+                className="relative overflow-hidden w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
+              >
+                {isGenerating ? (
+                  <>
+                    <span className="relative z-10 flex items-center justify-center">
+                      {!prefersReducedMotion ? (
+                        <ThinkingOrb state="working" size={20} />
+                      ) : (
+                        currentStage || 'Generating...'
+                      )}
+                    </span>
+                    <div
+                      className="absolute bottom-0 left-0 h-[2px] bg-sheet/40 transition-all duration-300 ease-out"
+                      style={{
+                        width:
+                          String(currentStage).includes('Verifying') ||
+                          String(currentStage).includes('Checking')
+                            ? '90%'
+                            : String(currentStage).includes('Generating')
+                              ? '60%'
+                              : '30%',
+                      }}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <span className="relative z-10">Generate spec</span>
+                    <span className="relative z-10 text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
+                      ⌘ Enter
+                    </span>
+                  </>
+                )}
+              </Button>
+            )}
             <Button
               variant="ghost"
               onClick={loadExample}
