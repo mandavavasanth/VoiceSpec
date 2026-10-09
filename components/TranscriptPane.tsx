@@ -9,6 +9,7 @@ import { ProgressStages } from '@/components/ProgressStages';
 import { isDictationBurst } from '@/lib/ui-utils';
 import BorderBeam from 'border-beam';
 import ThinkingOrbs from 'thinking-orbs';
+import LiquidMetal from 'metal-fx';
 
 export function TranscriptPane() {
   const {
@@ -313,6 +314,15 @@ export function TranscriptPane() {
               disabled={!isValid || isGenerating}
               className="relative overflow-hidden w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
             >
+              {!isGenerating && !prefersReducedMotion && (
+                <div className="absolute inset-0 z-0 pointer-events-none">
+                  <LiquidMetal
+                    active={true}
+                    theme="light"
+                    colors={['#0066FF', '#0044CC', '#00AAFF']}
+                  />
+                </div>
+              )}
               {isGenerating ? (
                 <>
                   <span className="relative z-10 flex items-center justify-center">
