@@ -1,10 +1,26 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { Loader2, CheckCircle2, Circle } from 'lucide-react';
+import { CheckCircle2, Circle } from 'lucide-react';
+import { ThinkingOrb } from 'thinking-orbs';
+import { useState, useEffect } from 'react';
 
 export function ProgressStages() {
   const { isGenerating, currentStage } = useStore();
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPrefersReducedMotion(mql.matches);
+    const handler = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+    mql.addEventListener('change', handler);
+    return () => {
+      mql.removeEventListener('change', handler);
+    };
+  }, []);
 
   if (!isGenerating) return null;
 
@@ -48,7 +64,9 @@ export function ProgressStages() {
             {isPast ? (
               <CheckCircle2 className="w-4 h-4 text-signal shrink-0" />
             ) : isActive ? (
-              <Loader2 className="w-4 h-4 animate-spin text-ink shrink-0" />
+              <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+                <ThinkingOrb state="working" size={20} aria-hidden paused={prefersReducedMotion} />
+              </div>
             ) : (
               <Circle className="w-4 h-4 shrink-0" />
             )}

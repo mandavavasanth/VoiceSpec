@@ -1,6 +1,23 @@
 'use client';
 
+import { ThinkingOrb } from 'thinking-orbs';
+import { useState, useEffect } from 'react';
+
 export function EmptyState({ isGenerating }: { isGenerating?: boolean }) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPrefersReducedMotion(mql.matches);
+    const handler = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+    mql.addEventListener('change', handler);
+    return () => {
+      mql.removeEventListener('change', handler);
+    };
+  }, []);
   return (
     <div
       className={`flex flex-col h-full space-y-8 px-4 sm:px-8 py-8 ${isGenerating ? 'animate-pulse opacity-60' : 'opacity-100'}`}
@@ -11,6 +28,12 @@ export function EmptyState({ isGenerating }: { isGenerating?: boolean }) {
           Requirements, tasks and acceptance criteria, each linked to the sentence it came from.
         </p>
       </div>
+
+      {isGenerating && (
+        <div className="flex justify-center mb-8">
+          <ThinkingOrb state="working" size={64} aria-hidden paused={prefersReducedMotion} />
+        </div>
+      )}
 
       <div className="space-y-4">
         {[1, 2, 3, 4, 5, 6].map((i) => (

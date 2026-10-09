@@ -8,8 +8,9 @@ import { buildEvidenceIndex, getHighlightPriority } from '@/lib/evidence-index';
 import { ProgressStages } from '@/components/ProgressStages';
 import { isDictationBurst } from '@/lib/ui-utils';
 import { BorderBeam } from 'border-beam';
-import { ThinkingOrb } from 'thinking-orbs';
 import { MetalFx } from 'metal-fx';
+
+const ENABLE_METAL_FX = false;
 
 export function TranscriptPane() {
   const {
@@ -309,7 +310,8 @@ export function TranscriptPane() {
       {!spec && (
         <div className="mt-6">
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-            {!isGenerating && !prefersReducedMotion ? (
+            {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
+            {!isGenerating && !prefersReducedMotion && ENABLE_METAL_FX ? (
               <MetalFx variant="button" theme="light" preset="silver">
                 <Button
                   onClick={() => void generateSpec()}
@@ -331,11 +333,7 @@ export function TranscriptPane() {
                 {isGenerating ? (
                   <>
                     <span className="relative z-10 flex items-center justify-center">
-                      {!prefersReducedMotion ? (
-                        <ThinkingOrb state="working" size={20} />
-                      ) : (
-                        currentStage || 'Generating...'
-                      )}
+                      {currentStage || 'Generating...'}
                     </span>
                     <div
                       className="absolute bottom-0 left-0 h-[2px] bg-sheet/40 transition-all duration-300 ease-out"
