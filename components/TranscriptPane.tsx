@@ -8,6 +8,7 @@ import { buildEvidenceIndex, getHighlightPriority } from '@/lib/evidence-index';
 import { ProgressStages } from '@/components/ProgressStages';
 import { isDictationBurst } from '@/lib/ui-utils';
 import BorderBeam from 'border-beam';
+import ThinkingOrbs from 'thinking-orbs';
 
 export function TranscriptPane() {
   const {
@@ -314,7 +315,13 @@ export function TranscriptPane() {
             >
               {isGenerating ? (
                 <>
-                  <span className="relative z-10">{currentStage || 'Generating...'}</span>
+                  <span className="relative z-10 flex items-center justify-center">
+                    {!prefersReducedMotion ? (
+                      <ThinkingOrbs state="generating" size="sm" />
+                    ) : (
+                      currentStage || 'Generating...'
+                    )}
+                  </span>
                   <div
                     className="absolute bottom-0 left-0 h-[2px] bg-sheet/40 transition-all duration-300 ease-out"
                     style={{
