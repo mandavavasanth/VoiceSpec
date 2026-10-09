@@ -7,6 +7,7 @@ import { useMemo, useRef, useEffect, KeyboardEvent, useState } from 'react';
 import { buildEvidenceIndex, getHighlightPriority } from '@/lib/evidence-index';
 import { ProgressStages } from '@/components/ProgressStages';
 import { isDictationBurst } from '@/lib/ui-utils';
+import BorderBeam from 'border-beam';
 
 export function TranscriptPane() {
   const {
@@ -31,6 +32,22 @@ export function TranscriptPane() {
 
   const previousTranscriptRef = useRef(transcript);
   const [burstKey, setBurstKey] = useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - rule not found in standard but just in case
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPrefersReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+    mediaQuery.addEventListener('change', onChange);
+    return () => {
+      mediaQuery.removeEventListener('change', onChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (isDictationBurst(previousTranscriptRef.current, transcript)) {
@@ -168,30 +185,68 @@ export function TranscriptPane() {
         onKeyDown={handleGlobalKeyDown}
       >
         {!spec ? (
-          <div className="flex flex-col flex-grow relative overflow-hidden rounded-sheet">
-            <div className="absolute inset-0 bg-sheet rounded-sheet shadow-sheet pointer-events-none" />
-            {burstKey > 0 && (
-              <div
-                key={burstKey}
-                className="absolute left-0 top-0 w-[3px] bg-marker animate-pulse-down pointer-events-none z-20"
-              />
-            )}
-            <Textarea
-              value={transcript}
-              onChange={(e) => {
-                setTranscript(e.target.value);
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder="Press the Wispr Flow key and talk..."
-              className="relative z-10 flex-grow resize-none font-newsreader text-[18px] leading-[1.7] max-w-[68ch] mx-auto p-6 md:p-8 bg-transparent border-none focus-visible:ring-0 shadow-none"
-              disabled={isGenerating}
-            />
-            {charCount > 0 && (
-              <div className="absolute bottom-4 right-4 z-10 text-xs text-slate bg-sheet/80 px-2 py-1 rounded backdrop-blur">
-                {wordCount} words • {charCount} chars
+          isGenerating && !prefersReducedMotion ? (
+            <BorderBeam
+              active={isGenerating}
+              theme="light"
+              colorVariant="ocean"
+              strength={0.6}
+              size="line"
+              style={{ borderRadius: 14, display: 'flex', flexDirection: 'column', flexGrow: 1 }}
+            >
+              <div className="flex flex-col flex-grow relative overflow-hidden rounded-sheet h-full w-full">
+                <div className="absolute inset-0 bg-sheet rounded-sheet shadow-sheet pointer-events-none" />
+                {burstKey > 0 && (
+                  <div
+                    key={burstKey}
+                    className="absolute left-0 top-0 w-[3px] bg-marker animate-pulse-down pointer-events-none z-20"
+                  />
+                )}
+                <Textarea
+                  value={transcript}
+                  onChange={(e) => {
+                    setTranscript(e.target.value);
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Press the Wispr Flow key and talk..."
+                  className="relative z-10 flex-grow resize-none font-newsreader text-[18px] leading-[1.7] max-w-[68ch] mx-auto p-6 md:p-8 bg-transparent border-none focus-visible:ring-0 shadow-none"
+                  disabled={isGenerating}
+                />
+                {charCount > 0 && (
+                  <div className="absolute bottom-4 right-4 z-10 text-xs text-slate bg-sheet/80 px-2 py-1 rounded backdrop-blur">
+                    {wordCount} words • {charCount} chars
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </BorderBeam>
+          ) : (
+            <div
+              className={`flex flex-col flex-grow relative overflow-hidden rounded-sheet ${isGenerating && prefersReducedMotion ? 'ring-2 ring-signal ring-offset-2' : ''}`}
+            >
+              <div className="absolute inset-0 bg-sheet rounded-sheet shadow-sheet pointer-events-none" />
+              {burstKey > 0 && (
+                <div
+                  key={burstKey}
+                  className="absolute left-0 top-0 w-[3px] bg-marker animate-pulse-down pointer-events-none z-20"
+                />
+              )}
+              <Textarea
+                value={transcript}
+                onChange={(e) => {
+                  setTranscript(e.target.value);
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder="Press the Wispr Flow key and talk..."
+                className="relative z-10 flex-grow resize-none font-newsreader text-[18px] leading-[1.7] max-w-[68ch] mx-auto p-6 md:p-8 bg-transparent border-none focus-visible:ring-0 shadow-none"
+                disabled={isGenerating}
+              />
+              {charCount > 0 && (
+                <div className="absolute bottom-4 right-4 z-10 text-xs text-slate bg-sheet/80 px-2 py-1 rounded backdrop-blur">
+                  {wordCount} words • {charCount} chars
+                </div>
+              )}
+            </div>
+          )
         ) : (
           <div className="flex-grow relative bg-sheet rounded-sheet shadow-sheet overflow-y-auto">
             <div
