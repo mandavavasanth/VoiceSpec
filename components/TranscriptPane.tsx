@@ -35,8 +35,12 @@ export function TranscriptPane() {
   const previousTranscriptRef = useRef(transcript);
   const [burstKey, setBurstKey] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - rule not found in standard but just in case
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -47,6 +51,7 @@ export function TranscriptPane() {
     };
     mediaQuery.addEventListener('change', onChange);
     return () => {
+      clearTimeout(timer);
       mediaQuery.removeEventListener('change', onChange);
     };
   }, []);
@@ -309,8 +314,8 @@ export function TranscriptPane() {
       {!spec && (
         <div className="mt-6">
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-            {!isGenerating && !prefersReducedMotion ? (
-              <MetalFx variant="button" theme="light" preset="silver">
+            {!isGenerating && !prefersReducedMotion && mounted ? (
+              <MetalFx variant="button" theme="light" preset="silver" normalizeHostStyles={false}>
                 <Button
                   onClick={() => void generateSpec()}
                   disabled={!isValid || isGenerating}
