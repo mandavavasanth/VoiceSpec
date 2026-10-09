@@ -87,9 +87,7 @@ export function Toolbar() {
               variant="outline"
               size="sm"
               className="h-8 rounded-controls text-slate hover:text-ink shadow-sm bg-sheet transition-colors"
-              onClick={() =>
-                void handleCopy('agent', toAgentPrompt(spec), 'Agent prompt copied to clipboard')
-              }
+              onClick={() => void handleCopy('agent', toAgentPrompt(spec), 'Copied agent prompt')}
             >
               {copiedId === 'agent' ? (
                 <Check className="w-4 h-4 mr-2 text-signal" />
@@ -110,9 +108,7 @@ export function Toolbar() {
               >
                 <DropdownMenuItem
                   className="rounded-md cursor-pointer hover:bg-slate/5 focus:bg-slate/5"
-                  onClick={() =>
-                    void handleCopy('md', toMarkdown(spec), 'Markdown copied to clipboard')
-                  }
+                  onClick={() => void handleCopy('md', toMarkdown(spec), 'Copied Markdown')}
                 >
                   {copiedId === 'md' ? (
                     <Check className="w-4 h-4 mr-2 text-signal" />

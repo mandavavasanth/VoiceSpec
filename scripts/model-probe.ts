@@ -61,10 +61,12 @@ void (async () => {
   }
 
   console.log('\n--- 2. TINY PROMPT TEST ---');
-  const mainModel = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
-  const fallbackModel = 'gemini-2.5-flash';
+  const modelsToTest = [
+    ...flashModels.map((m) => m.name.replace('models/', '')),
+    'gemini-2.5-flash',
+  ];
 
-  for (const m of [mainModel, fallbackModel]) {
+  for (const m of modelsToTest) {
     console.log(`\nTesting model: ${m}`);
     const start = Date.now();
     try {

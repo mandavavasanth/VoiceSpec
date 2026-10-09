@@ -28,11 +28,11 @@ test.describe('VoiceSpec E2E', () => {
     // Click Export then Copy Markdown and check for toast
     await page.click('text=Export');
     await page.click('text=Copy Markdown');
-    await expect(page.locator('text=Markdown copied to clipboard')).toBeVisible();
+    await expect(page.locator('text=Copied Markdown')).toBeVisible();
 
     // Click Copy agent prompt button and check for toast
     await page.click('text=Copy agent prompt');
-    await expect(page.locator('text=Agent prompt copied to clipboard')).toBeVisible();
+    await expect(page.locator('text=Copied agent prompt')).toBeVisible();
   });
 
   test('Happy path with accessible navigation', async ({ page, isMobile }) => {
