@@ -13,7 +13,12 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((val) => (!val || val.trim() === '' ? undefined : val)),
-  GEMINI_MODEL: z.string().default('gemini-3.6-flash'),
+  OPENROUTER_API_KEY: z
+    .string()
+    .optional()
+    .transform((val) => (!val || val.trim() === '' ? undefined : val)),
+  GEMINI_MODEL: z.string().default('gemini-3.5-flash'),
+  OPENROUTER_MODEL: z.string().default('openrouter/free'),
   GEMINI_FALLBACK_MODEL: z.string().optional(),
   FORCE_DEMO_MODE: z
     .string()
@@ -29,7 +34,9 @@ export function getEnv(): Env {
   if (_env) return _env;
   _env = envSchema.parse({
     GEMINI_API_KEY: process.env['GEMINI_API_KEY'],
+    OPENROUTER_API_KEY: process.env['OPENROUTER_API_KEY'],
     GEMINI_MODEL: process.env['GEMINI_MODEL'],
+    OPENROUTER_MODEL: process.env['OPENROUTER_MODEL'],
     FORCE_DEMO_MODE: process.env['FORCE_DEMO_MODE'],
   });
   return _env;
@@ -41,7 +48,7 @@ export function getEnv(): Env {
  */
 export function isGeminiAvailable(): boolean {
   const env = getEnv();
-  return !env.FORCE_DEMO_MODE && !!env.GEMINI_API_KEY;
+  return !env.FORCE_DEMO_MODE && (!!env.GEMINI_API_KEY || !!env.OPENROUTER_API_KEY);
 }
 
 /**

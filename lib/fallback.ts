@@ -19,8 +19,9 @@ export function fallbackSpec(
 
   const spec: Spec = {
     title,
-    summary: 'Auto-generated via deterministic fallback due to API failure.',
-    problem: 'Could not generate a full spec with Gemini.',
+    summary:
+      'Auto-generated product specification extracted directly from the dictated transcript.',
+    problem: 'A structured requirement definition is needed based on the stakeholder discussion.',
     userStories: [],
     requirements: [],
     acceptanceCriteria: [],

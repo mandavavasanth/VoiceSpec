@@ -9,7 +9,6 @@ import { ProgressStages } from '@/components/ProgressStages';
 import { isDictationBurst } from '@/lib/ui-utils';
 import { BorderBeam } from 'border-beam';
 import { ThinkingOrb } from 'thinking-orbs';
-import { MetalFx } from 'metal-fx';
 
 export function TranscriptPane() {
   const {
@@ -35,12 +34,8 @@ export function TranscriptPane() {
   const previousTranscriptRef = useRef(transcript);
   const [burstKey, setBurstKey] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setMounted(true);
-    }, 0);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - rule not found in standard but just in case
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -51,7 +46,6 @@ export function TranscriptPane() {
     };
     mediaQuery.addEventListener('change', onChange);
     return () => {
-      clearTimeout(timer);
       mediaQuery.removeEventListener('change', onChange);
     };
   }, []);
@@ -314,57 +308,46 @@ export function TranscriptPane() {
       {!spec && (
         <div className="mt-6">
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-            {!isGenerating && !prefersReducedMotion && mounted ? (
-              <MetalFx variant="button" theme="light" preset="silver" normalizeHostStyles={false}>
-                <Button
-                  onClick={() => void generateSpec()}
-                  disabled={!isValid || isGenerating}
-                  className="relative overflow-hidden w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
-                >
+            <Button
+              onClick={() => void generateSpec()}
+              disabled={!isValid || isGenerating}
+              className={`relative overflow-hidden w-full sm:w-auto rounded-xl flex items-center justify-center gap-2 h-12 px-8 font-medium transition-all duration-200 ${
+                isGenerating
+                  ? 'bg-signal text-sheet shadow-sm'
+                  : 'bg-gradient-to-r from-signal to-[#4f46e5] text-white hover:shadow-[0_8px_16px_-4px_rgba(45,91,255,0.4)] hover:-translate-y-[1px] border border-white/10 shadow-sm'
+              }`}
+            >
+              {isGenerating ? (
+                <>
+                  <span className="relative z-10 flex items-center justify-center">
+                    {!prefersReducedMotion ? (
+                      <ThinkingOrb state="working" size={20} />
+                    ) : (
+                      currentStage || 'Generating...'
+                    )}
+                  </span>
+                  <div
+                    className="absolute bottom-0 left-0 h-[2px] bg-white/40 transition-all duration-300 ease-out"
+                    style={{
+                      width:
+                        String(currentStage).includes('Verifying') ||
+                        String(currentStage).includes('Checking')
+                          ? '90%'
+                          : String(currentStage).includes('Generating')
+                            ? '60%'
+                            : '30%',
+                    }}
+                  />
+                </>
+              ) : (
+                <>
                   <span className="relative z-10">Generate spec</span>
-                  <span className="relative z-10 text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
+                  <span className="relative z-10 text-white/70 text-xs border border-white/20 rounded px-1.5 py-0.5 font-mono ml-2 bg-black/10">
                     ⌘ Enter
                   </span>
-                </Button>
-              </MetalFx>
-            ) : (
-              <Button
-                onClick={() => void generateSpec()}
-                disabled={!isValid || isGenerating}
-                className="relative overflow-hidden w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
-              >
-                {isGenerating ? (
-                  <>
-                    <span className="relative z-10 flex items-center justify-center">
-                      {!prefersReducedMotion ? (
-                        <ThinkingOrb state="working" size={20} />
-                      ) : (
-                        currentStage || 'Generating...'
-                      )}
-                    </span>
-                    <div
-                      className="absolute bottom-0 left-0 h-[2px] bg-sheet/40 transition-all duration-300 ease-out"
-                      style={{
-                        width:
-                          String(currentStage).includes('Verifying') ||
-                          String(currentStage).includes('Checking')
-                            ? '90%'
-                            : String(currentStage).includes('Generating')
-                              ? '60%'
-                              : '30%',
-                      }}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <span className="relative z-10">Generate spec</span>
-                    <span className="relative z-10 text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
-                      ⌘ Enter
-                    </span>
-                  </>
-                )}
-              </Button>
-            )}
+                </>
+              )}
+            </Button>
             <Button
               variant="ghost"
               onClick={loadExample}
