@@ -200,7 +200,7 @@ describe('runPipeline', () => {
     expect(result.warnings.includes('quota')).toBe(true);
   });
 
-  it('rejects based on rate limit', { timeout: 10000 }, async () => {
+  it('rejects based on rate limit', { timeout: 14000 }, async () => {
     mockGenerateContent.mockResolvedValue({
       text: JSON.stringify({
         title: 'Mocked Spec',

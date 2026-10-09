@@ -18,7 +18,7 @@ export class GeminiError extends Error {
 }
 
 const GLOBAL_DEADLINE_MS = 25000;
-const ATTEMPT_TIMEOUT_MS = 10000;
+const ATTEMPT_TIMEOUT_MS = 14000;
 
 export class GeminiClient implements IGeminiClient {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
