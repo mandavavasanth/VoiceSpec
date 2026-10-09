@@ -8,8 +8,8 @@ import { buildEvidenceIndex, getHighlightPriority } from '@/lib/evidence-index';
 import { ProgressStages } from '@/components/ProgressStages';
 import { isDictationBurst } from '@/lib/ui-utils';
 import { BorderBeam } from 'border-beam';
-import { ThinkingOrbs } from 'thinking-orbs';
-import { LiquidMetal } from 'metal-fx';
+import { ThinkingOrb } from 'thinking-orbs';
+import { MetalFx } from 'metal-fx';
 
 export function TranscriptPane() {
   const {
@@ -309,51 +309,57 @@ export function TranscriptPane() {
       {!spec && (
         <div className="mt-6">
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-            <Button
-              onClick={() => void generateSpec()}
-              disabled={!isValid || isGenerating}
-              className="relative overflow-hidden w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
-            >
-              {!isGenerating && !prefersReducedMotion && (
-                <div className="absolute inset-0 z-0 pointer-events-none">
-                  <LiquidMetal
-                    active={true}
-                    theme="light"
-                    colors={['#0066FF', '#0044CC', '#00AAFF']}
-                  />
-                </div>
-              )}
-              {isGenerating ? (
-                <>
-                  <span className="relative z-10 flex items-center justify-center">
-                    {!prefersReducedMotion ? (
-                      <ThinkingOrbs state="generating" size="sm" />
-                    ) : (
-                      currentStage || 'Generating...'
-                    )}
-                  </span>
-                  <div
-                    className="absolute bottom-0 left-0 h-[2px] bg-sheet/40 transition-all duration-300 ease-out"
-                    style={{
-                      width:
-                        String(currentStage).includes('Verifying') ||
-                        String(currentStage).includes('Checking')
-                          ? '90%'
-                          : String(currentStage).includes('Generating')
-                            ? '60%'
-                            : '30%',
-                    }}
-                  />
-                </>
-              ) : (
-                <>
-                  Generate spec
-                  <span className="text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
+            {!isGenerating && !prefersReducedMotion ? (
+              <MetalFx variant="button" theme="light" preset="silver">
+                <Button
+                  onClick={() => void generateSpec()}
+                  disabled={!isValid || isGenerating}
+                  className="relative overflow-hidden w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
+                >
+                  <span className="relative z-10">Generate spec</span>
+                  <span className="relative z-10 text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
                     ⌘ Enter
                   </span>
-                </>
-              )}
-            </Button>
+                </Button>
+              </MetalFx>
+            ) : (
+              <Button
+                onClick={() => void generateSpec()}
+                disabled={!isValid || isGenerating}
+                className="relative overflow-hidden w-full sm:w-auto bg-signal text-sheet hover:bg-signal/90 rounded-controls shadow-sm flex items-center justify-center gap-2 h-11 px-6"
+              >
+                {isGenerating ? (
+                  <>
+                    <span className="relative z-10 flex items-center justify-center">
+                      {!prefersReducedMotion ? (
+                        <ThinkingOrb state="generating" size="sm" />
+                      ) : (
+                        currentStage || 'Generating...'
+                      )}
+                    </span>
+                    <div
+                      className="absolute bottom-0 left-0 h-[2px] bg-sheet/40 transition-all duration-300 ease-out"
+                      style={{
+                        width:
+                          String(currentStage).includes('Verifying') ||
+                          String(currentStage).includes('Checking')
+                            ? '90%'
+                            : String(currentStage).includes('Generating')
+                              ? '60%'
+                              : '30%',
+                      }}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <span className="relative z-10">Generate spec</span>
+                    <span className="relative z-10 text-sheet/70 text-xs border border-sheet/20 rounded px-1 font-mono">
+                      ⌘ Enter
+                    </span>
+                  </>
+                )}
+              </Button>
+            )}
             <Button
               variant="ghost"
               onClick={loadExample}
