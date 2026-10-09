@@ -7,9 +7,9 @@ import { useMemo, useRef, useEffect, KeyboardEvent, useState } from 'react';
 import { buildEvidenceIndex, getHighlightPriority } from '@/lib/evidence-index';
 import { ProgressStages } from '@/components/ProgressStages';
 import { isDictationBurst } from '@/lib/ui-utils';
-import BorderBeam from 'border-beam';
-import ThinkingOrbs from 'thinking-orbs';
-import LiquidMetal from 'metal-fx';
+import { BorderBeam } from 'border-beam';
+import { ThinkingOrbs } from 'thinking-orbs';
+import { LiquidMetal } from 'metal-fx';
 
 export function TranscriptPane() {
   const {
