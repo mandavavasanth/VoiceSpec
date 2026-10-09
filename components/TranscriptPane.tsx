@@ -332,7 +332,7 @@ export function TranscriptPane() {
                   <>
                     <span className="relative z-10 flex items-center justify-center">
                       {!prefersReducedMotion ? (
-                        <ThinkingOrb state="generating" size="sm" />
+                        <ThinkingOrb state="working" size={20} />
                       ) : (
                         currentStage || 'Generating...'
                       )}
