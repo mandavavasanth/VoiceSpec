@@ -36,8 +36,8 @@ describe('runPipeline', () => {
     vi.mocked(isGeminiAvailable).mockReturnValue(true);
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: 'test-key',
-      GEMINI_MODEL: 'gemini-3.8-flash',
-      GEMINI_FALLBACK_MODEL: 'gemini-3.5-flash-lite',
+      GEMINI_MODEL: 'gemini-3.6-flash',
+      GEMINI_FALLBACK_MODEL: 'gemini-3.8-flash',
       FORCE_DEMO_MODE: false,
     });
   });
@@ -68,7 +68,7 @@ describe('runPipeline', () => {
     const result = await runPipeline(transcript, '127.0.0.1');
     expect(result.mode).toBe('gemini');
     expect(result.spec.title).toBe('Mocked Spec');
-    expect(result.metrics.modelUsed).toBe('gemini-3.8-flash');
+    expect(result.metrics.modelUsed).toBe('gemini-3.6-flash');
     expect(result.metrics.droppedEvidence).toBe(0);
   });
 
@@ -105,7 +105,7 @@ describe('runPipeline', () => {
     const result = await runPipeline(transcript, '127.0.0.1');
 
     expect(result.mode).toBe('gemini');
-    expect(result.metrics.modelUsed).toBe('gemini-3.5-flash-lite');
+    expect(result.metrics.modelUsed).toBe('gemini-3.8-flash');
     expect(result.warnings.includes('rate-limit')).toBe(true);
   });
 
@@ -126,7 +126,7 @@ describe('runPipeline', () => {
   it('skips fallback model if variable is unset', { timeout: 15000 }, async () => {
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: 'test-key',
-      GEMINI_MODEL: 'gemini-3.8-flash',
+      GEMINI_MODEL: 'gemini-3.6-flash',
       GEMINI_FALLBACK_MODEL: undefined,
       FORCE_DEMO_MODE: false,
     });
@@ -156,7 +156,7 @@ describe('runPipeline', () => {
     vi.mocked(getMode).mockReturnValue('demo');
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: '',
-      GEMINI_MODEL: 'gemini-3.8-flash',
+      GEMINI_MODEL: 'gemini-3.6-flash',
       FORCE_DEMO_MODE: false,
     });
 
@@ -174,7 +174,7 @@ describe('runPipeline', () => {
     vi.mocked(getMode).mockReturnValue('demo');
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: 'test-key',
-      GEMINI_MODEL: 'gemini-3.8-flash',
+      GEMINI_MODEL: 'gemini-3.6-flash',
       FORCE_DEMO_MODE: true, // This flag skips the network call
     });
 

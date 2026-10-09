@@ -63,7 +63,8 @@ void (async () => {
   console.log('\n--- 2. TINY PROMPT TEST ---');
   const modelsToTest = [
     ...flashModels.map((m) => m.name.replace('models/', '')),
-    'gemini-2.5-flash',
+    'gemini-3.6-flash',
+    'gemini-3.8-flash',
   ];
 
   for (const m of modelsToTest) {
@@ -87,7 +88,7 @@ void (async () => {
   // Just pick the first flash model that supports generating content, or fallback to mainModel
   const bestModel =
     flashModels.find((m: any) => m.supportedGenerationMethods?.includes('generateContent'))?.name ||
-    'models/gemini-2.5-flash';
+    'models/gemini-3.6-flash';
   const bestModelClean = bestModel.replace('models/', '');
 
   console.log(`Selected best model: ${bestModelClean}`);
