@@ -43,4 +43,16 @@ describe('fallbackSpec', () => {
     // Reason code is the only warning entry (no verbose message)
     expect(warnings[0]).toBe('timeout');
   });
+
+  it('builds spec title from the first meaningful sentence and shortens it', () => {
+    const longSentence =
+      'This is a very long sentence that goes on and on and on and definitely exceeds the seventy character limit that we want to enforce on the title.';
+    const sentences = [
+      '   ', // empty
+      longSentence,
+    ];
+    const { spec } = fallbackSpec(sentences, 'timeout');
+    expect(spec.title).toBe(longSentence.substring(0, 67) + '...');
+    expect(spec.title.length).toBeLessThanOrEqual(70);
+  });
 });

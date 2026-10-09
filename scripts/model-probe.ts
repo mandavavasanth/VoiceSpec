@@ -94,11 +94,6 @@ void (async () => {
   console.log(`Selected best model: ${bestModelClean}`);
 
   await import('../lib/pipeline').then(async ({ runPipeline }) => {
-    // Override the environment variable so the pipeline uses this model
-    process.env.GEMINI_MODEL = bestModelClean;
-    // Don't set fallback so we get the exact reason code if it fails
-    delete process.env.GEMINI_FALLBACK_MODEL;
-
     let transcript = '';
     try {
       const transcriptPath = path.join(projectDir, 'fixtures', 'sample-transcript.txt');
@@ -114,14 +109,28 @@ void (async () => {
       console.log(`Mode: ${result.mode}`);
       console.log(`Model Used: ${result.metrics.modelUsed}`);
       console.log(`Latency: ${result.metrics.latency}ms`);
+      console.log(`Attempts: ${result.metrics.attempts || 1}`);
 
       if (result.mode === 'gemini') {
         console.log(`Verified Evidence: ${result.metrics.verifiedEvidence}`);
         console.log(`Dropped Evidence: ${result.metrics.droppedEvidence}`);
-      } else {
+
+        console.log('Spec Items:');
+        console.log(`  User Stories: ${result.spec.userStories.length || 0}`);
+        console.log(`  Requirements: ${result.spec.requirements.length || 0}`);
+        console.log(`  Acceptance Criteria: ${result.spec.acceptanceCriteria.length || 0}`);
+        console.log(`  Risks: ${result.spec.risks.length || 0}`);
+        console.log(`  Open Questions: ${result.spec.openQuestions.length || 0}`);
+        console.log(`  Tasks: ${result.spec.tasks.length || 0}`);
+      }
+
+      console.log(`Warnings: ${JSON.stringify(result.warnings)}`);
+
+      if (result.mode !== 'gemini') {
         const reason =
           result.warnings.find((w) => !w.includes('Fallback')) || result.warnings[0] || 'unknown';
         console.log(`Reason code: ${reason}`);
+        console.log(`Status: Fallback`);
       }
     } catch (err) {
       console.error('Pipeline crashed:', err);

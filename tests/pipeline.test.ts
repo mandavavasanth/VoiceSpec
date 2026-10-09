@@ -164,7 +164,7 @@ describe('runPipeline', () => {
     const result = await runPipeline(transcript, '127.0.0.1');
 
     expect(result.mode).toBe('demo');
-    expect(result.spec.title).toContain('Fallback Spec');
+    expect(result.spec.title).toContain('As a user I want to test so that it works.');
     expect(result.spec.userStories.length).toBe(1);
     expect(result.metrics.verifiedEvidence).toBe(1); // Demo mode assigns valid evidence
     expect(result.warnings.includes('no-key')).toBe(true);
