@@ -2,7 +2,7 @@
 
 Transform raw product discovery transcripts into structured, developer-ready specifications instantly. Say goodbye to manual spec writing and hello to automated provenance.
 
-**Live Demo:** [Placeholder URL]
+**Live Demo:** [https://voice-spec-two.vercel.app](https://voice-spec-two.vercel.app)
 
 ![Hero Screenshot Desktop](docs/step8-desktop.png)
 ![Hero Screenshot Mobile](docs/step8-mobile.png)
@@ -23,7 +23,7 @@ Use Wispr Flow to dictate your product thoughts and generate a spec instantly:
 - **Export Agent Prompt**: Generates a deterministic Markdown prompt, complete with topological sorting for tasks and backtick safety, ready to be pasted into an AI coding agent.
 - **Export GitHub Script**: Generates a `gh` CLI shell script to automatically create GitHub Issues for every task, mapping dependencies to issue mentions.
 - **Copy Issue Body**: Pick a specific task and copy its detailed issue body to your clipboard.
-- **Accessibility**: Includes semantic HTML landmarks, a skip-to-content link, full keyboard navigation, and respects user preferences for reduced-motion.
+- **Accessibility**: Includes semantic HTML landmarks, keyboard navigation, and respects user preferences for reduced-motion.
 
 ## Architecture
 
@@ -59,7 +59,9 @@ graph TD
     GeminiCall -->|Quota Exhausted| Demo
     Stream --> Parse[Parse JSON Stream]
     Parse --> Validate[Validate against Zod Schema]
-    Validate --> Output[Structured Spec]
+    Validate --> Evidence[Evidence Grounding]
+    Evidence --> Integrity[Integrity Checks]
+    Integrity --> Output[Structured Spec]
     Demo --> Output
 ```
 
@@ -105,7 +107,7 @@ graph TD
 
 - **Client-side State**: Zustand is used for client-side state management because it provides a lightweight, predictable store without the boilerplate of Redux, perfectly suiting a single-page spec editor.
 - **Serverless API**: Next.js App Router API endpoints provide a secure server environment to handle the Gemini API key without exposing it to the client.
-- **Streaming JSON**: The API parses the LLM stream chunk-by-chunk and repairs partial JSON payloads so the user sees results progressively rather than waiting for the entire spec to generate.
+- **Streaming JSON**: The API yields progress through stage events and then returns a final structured result, so the user sees progress updates during the generation wait.
 - **Resilience**: The pipeline will always output a valid spec. If the Gemini API is down, rate-limited, or if the user exhausts their free quota, the application automatically falls back to a deterministic "Demo Mode".
 
 ## Security Notes
@@ -117,7 +119,7 @@ graph TD
 
 - **Gemini Free Quota**: Because this app relies on the free tier of the Gemini API, heavy usage may result in a `429 Quota Exhausted` error. When this happens, the app will gracefully degrade to Demo Mode output.
 - **Capacity Issues**: 503 errors from overloaded Google servers are handled via a fallback model and retries, but if all attempts fail, it will also fall back to Demo Mode.
-- **Rate Limiting**: An in-memory token bucket rate limiter is used per-instance (2 requests/min). In a serverless environment like Vercel, this is per-lambda-instance, not global.
+- **Rate Limiting**: An in-memory sliding window rate limiter is used per-instance (10 requests per minute). In a serverless environment like Vercel, this is per-lambda-instance, not global.
 - **Length Limit**: Transcripts are capped at 20,000 characters to fit well within the context window and typical processing times.
 
 ## Roadmap
