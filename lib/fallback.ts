@@ -11,8 +11,14 @@ export function fallbackSpec(
   sentences: string[],
   reason: FallbackReason,
 ): { spec: Spec; warnings: string[] } {
+  const firstMeaningful = sentences.find((s) => s.trim().length > 0);
+  let title = firstMeaningful ? firstMeaningful.trim() : 'Demo Spec';
+  if (title.length >= 70) {
+    title = title.substring(0, 67) + '...';
+  }
+
   const spec: Spec = {
-    title: 'Fallback Spec (Demo Mode)',
+    title,
     summary: 'Auto-generated via deterministic fallback due to API failure.',
     problem: 'Could not generate a full spec with Gemini.',
     userStories: [],

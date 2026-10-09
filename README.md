@@ -89,8 +89,8 @@ graph TD
 | Variable                | Description                                                                                              |
 | ----------------------- | -------------------------------------------------------------------------------------------------------- |
 | `GEMINI_API_KEY`        | Your Google Gemini API key. Required for live generation.                                                |
-| `GEMINI_MODEL`          | The primary Gemini model to use (default: `gemini-1.5-flash-8b`).                                        |
-| `GEMINI_FALLBACK_MODEL` | An optional fallback model to use if the primary model fails due to capacity (e.g., `gemini-1.5-flash`). |
+| `GEMINI_MODEL`          | The primary Gemini model to use (default: `gemini-3.6-flash`).                                           |
+| `GEMINI_FALLBACK_MODEL` | An optional fallback model to use if the primary model fails due to capacity (e.g., `gemini-3.8-flash`). |
 | `FORCE_DEMO_MODE`       | Set to `true` to force demo mode and prevent real network calls to Gemini (used in tests/CI).            |
 
 ## Vercel Deployment
@@ -98,6 +98,7 @@ graph TD
 1. Push your code to GitHub.
 2. Go to Vercel and import the repository.
 3. In the environment variables section, add `GEMINI_API_KEY`, `GEMINI_MODEL`, and optionally `GEMINI_FALLBACK_MODEL`.
+   _(Note: Model names change frequently. Always check available names with `npm run tsx scripts/model-probe.ts` before setting them!)_
 4. Deploy!
 
 ## Design Decisions and Tradeoffs

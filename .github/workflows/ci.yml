@@ -9,6 +9,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -37,3 +38,5 @@ jobs:
         run: npx playwright install chromium --with-deps
       - name: E2E Tests
         run: npm run test:e2e
+        env:
+          FORCE_DEMO_MODE: 'true'

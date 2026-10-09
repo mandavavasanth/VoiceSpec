@@ -109,8 +109,8 @@ export function TranscriptPane() {
       const res = await fetch('/sample-transcript.txt');
       const text = await res.text();
       setTranscript(text);
-    } catch (err) {
-      console.error('Failed to load example', err);
+    } catch {
+      // Ignore
     }
   };
 
