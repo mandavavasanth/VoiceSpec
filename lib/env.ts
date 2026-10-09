@@ -12,7 +12,7 @@ const envSchema = z.object({
   GEMINI_API_KEY: z
     .string()
     .optional()
-    .transform((val) => (val === '' ? undefined : val)),
+    .transform((val) => (!val || val.trim() === '' ? undefined : val)),
   GEMINI_MODEL: z.string().default('gemini-3.6-flash'),
   GEMINI_FALLBACK_MODEL: z.string().optional(),
   FORCE_DEMO_MODE: z
