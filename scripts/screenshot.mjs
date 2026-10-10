@@ -5,7 +5,7 @@ import { chromium } from 'playwright';
   
   const capture = async (width, height, name) => {
     const page = await browser.newPage({ viewport: { width, height } });
-    await page.goto('http://localhost:3001');
+    await page.goto('http://localhost:3000');
     
     await page.click('text=Use an example');
     
@@ -19,7 +19,7 @@ import { chromium } from 'playwright';
     
     // Finished state
     try {
-      await page.getByText('Requirements').first().waitFor({ timeout: 5000 });
+      await page.getByText('Requirements').first().waitFor({ timeout: 30000 });
       await page.waitForTimeout(1000); // Let animation settle
     } catch (e) {
       console.log('Timeout waiting for Requirements for', name);

@@ -1,5 +1,7 @@
 'use client';
 
+import { ThemeToggle } from '@/components/ThemeToggle';
+
 import { useState, useRef } from 'react';
 import { useStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -185,6 +187,7 @@ export function Toolbar() {
             </DropdownMenu>
           </div>
         )}
+        <ThemeToggle />
       </div>
     </header>
   );

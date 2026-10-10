@@ -3,6 +3,7 @@ import { Newsreader, Instrument_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/sonner';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 const newsreader = Newsreader({ subsets: ['latin'], variable: '--font-newsreader' });
 const instrumentSans = Instrument_Sans({ subsets: ['latin'], variable: '--font-instrument' });
@@ -22,10 +23,21 @@ export default function RootLayout({
     <html
       lang="en"
       className={cn(newsreader.variable, instrumentSans.variable, jetbrainsMono.variable)}
+      suppressHydrationWarning
     >
-      <body className="antialiased min-h-screen bg-paper text-ink font-instrument">
-        {children}
-        <Toaster />
+      <body
+        className="antialiased min-h-screen bg-paper text-ink font-instrument"
+        suppressHydrationWarning
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

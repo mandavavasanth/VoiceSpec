@@ -29,8 +29,8 @@
   --color-accent: var(--sheet);
   --color-accent-foreground: var(--ink);
 
-  --color-border: #e2e8f0; /* Faint border */
-  --color-input: #e2e8f0;
+  --color-border: var(--border);
+  --color-input: var(--input);
   --color-ring: var(--signal);
 
   --radius-sm: 6px;
@@ -51,7 +51,20 @@
   --slate: #5b6780;
   --marker: #ffe14d;
   --signal: #2d5bff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
   --radius: 6px;
+}
+
+.dark {
+  --paper: #0b0e14;
+  --sheet: #151a23;
+  --ink: #e2e8f0;
+  --slate: #8b9bb4;
+  --marker: #854d0e;
+  --signal: #3b82f6;
+  --border: #1e293b;
+  --input: #1e293b;
 }
 
 @layer base {
