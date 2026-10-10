@@ -37,6 +37,8 @@ describe('runPipeline', () => {
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: 'test-key',
       GEMINI_MODEL: 'gemini-3.6-flash',
+      OPENROUTER_API_KEY: undefined,
+      OPENROUTER_MODEL: 'openrouter/free',
       GEMINI_FALLBACK_MODEL: 'gemini-3.8-flash',
       FORCE_DEMO_MODE: false,
     });
@@ -127,6 +129,8 @@ describe('runPipeline', () => {
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: 'test-key',
       GEMINI_MODEL: 'gemini-3.6-flash',
+      OPENROUTER_API_KEY: undefined,
+      OPENROUTER_MODEL: 'openrouter/free',
       GEMINI_FALLBACK_MODEL: undefined,
       FORCE_DEMO_MODE: false,
     });
@@ -157,6 +161,8 @@ describe('runPipeline', () => {
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: '',
       GEMINI_MODEL: 'gemini-3.6-flash',
+      OPENROUTER_API_KEY: undefined,
+      OPENROUTER_MODEL: 'openrouter/free',
       FORCE_DEMO_MODE: false,
     });
 
@@ -175,6 +181,8 @@ describe('runPipeline', () => {
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: 'test-key',
       GEMINI_MODEL: 'gemini-3.6-flash',
+      OPENROUTER_API_KEY: undefined,
+      OPENROUTER_MODEL: 'openrouter/free',
       FORCE_DEMO_MODE: true, // This flag skips the network call
     });
 
