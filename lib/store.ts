@@ -142,7 +142,7 @@ export const useStore = create<AppState>((set, get) => ({
               set({ error: event.message });
             }
           } catch (e) {
-            console.error('Failed to parse NDJSON part:', part);
+            // Ignore parse errors for incomplete chunks
           }
         }
       }

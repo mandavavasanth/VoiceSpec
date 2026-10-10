@@ -247,7 +247,6 @@ export class GeminiClient implements IGeminiClient {
           throw err;
         }
 
-        console.log('DEBUG RAW ERR:', err);
         // Check rate limit / auth / server errors
         const errorObj = err as Record<string, unknown>;
         const status =
@@ -301,8 +300,6 @@ export class GeminiClient implements IGeminiClient {
         if (validation.success) {
           return { spec: validation.data, modelUsed: modelToUse };
         } else {
-          console.error('ZOD ERROR:', validation.error.message);
-          console.error('RAW JSON THAT FAILED:', rawJson);
           // Zod validation failed
           if (attempt === 1) {
             // REPAIR CALL: feed the error back
