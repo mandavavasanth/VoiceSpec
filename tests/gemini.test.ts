@@ -24,9 +24,7 @@ describe('GeminiClient', () => {
   beforeEach(() => {
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: 'test-key',
-      OPENROUTER_API_KEY: undefined,
       GEMINI_MODEL: 'gemini-test',
-      OPENROUTER_MODEL: 'openrouter/free',
       FORCE_DEMO_MODE: false,
     });
     vi.mocked(isGeminiAvailable).mockReturnValue(true);
@@ -109,9 +107,7 @@ describe('GeminiClient', () => {
   it('makes at most 2 attempts (main then fallback) on rate limit', async () => {
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: 'test-key',
-      OPENROUTER_API_KEY: undefined,
       GEMINI_MODEL: 'gemini-test',
-      OPENROUTER_MODEL: 'openrouter/free',
       GEMINI_FALLBACK_MODEL: 'gemini-fallback',
       FORCE_DEMO_MODE: false,
     });

@@ -22,9 +22,7 @@ describe('Pipeline Integration', () => {
     // Force demo mode for this test
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: '',
-      OPENROUTER_API_KEY: undefined,
       GEMINI_MODEL: 'gemini-3.6-flash',
-      OPENROUTER_MODEL: 'openrouter/free',
       FORCE_DEMO_MODE: false,
     });
     const { getMode } = await import('@/lib/env');
