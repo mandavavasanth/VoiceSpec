@@ -4,8 +4,8 @@ Transform raw product discovery transcripts into structured, developer-ready spe
 
 **Live Demo:** [https://voice-spec-two.vercel.app](https://voice-spec-two.vercel.app)
 
-![Hero Screenshot Desktop](docs/step8-desktop.png)
-![Hero Screenshot Mobile](docs/step8-mobile.png)
+![Hero Screenshot Desktop](screenshots/desktop-finished.png)
+![Hero Screenshot Mobile](screenshots/mobile-finished.png)
 
 ## Quickstart with Wispr Flow
 
