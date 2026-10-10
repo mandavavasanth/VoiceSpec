@@ -36,6 +36,7 @@ export function getEnv(): Env {
     GEMINI_API_KEY: process.env['GEMINI_API_KEY'],
     OPENROUTER_API_KEY: process.env['OPENROUTER_API_KEY'],
     GEMINI_MODEL: process.env['GEMINI_MODEL'],
+    GEMINI_FALLBACK_MODEL: process.env['GEMINI_FALLBACK_MODEL'],
     OPENROUTER_MODEL: process.env['OPENROUTER_MODEL'],
     FORCE_DEMO_MODE: process.env['FORCE_DEMO_MODE'],
   });
