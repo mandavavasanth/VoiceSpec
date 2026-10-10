@@ -85,6 +85,7 @@ graph TD
    ```bash
    npm run dev
    ```
+   _(Windows users can also double-click `start.bat` to launch the server without opening a terminal.)_
 
 ## Environment Variables
 
@@ -130,7 +131,7 @@ graph TD
 
 ## Roadmap
 
-- [ ] Dark mode toggle
+- [x] Dark mode toggle
 - [ ] Spec history
 - [ ] Transcript diffing
 
