@@ -89,7 +89,7 @@ describe('GeminiClient', () => {
     expect(mockGenerateContent).toHaveBeenCalledTimes(2);
   });
 
-  it('retries on 429 and throws rate-limit if max retries exceeded', async () => {
+  it('throws rate-limit immediately without fallback on 429', async () => {
     const error429 = new Error('Rate limit');
     (error429 as Error & { status?: number }).status = 429;
 
@@ -103,7 +103,33 @@ describe('GeminiClient', () => {
     const err = await promise;
     expect(err).toBeInstanceOf(GeminiError);
     expect((err as GeminiError).reason).toBe('rate-limit');
-    expect(mockGenerateContent).toHaveBeenCalledTimes(3);
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+  });
+
+  it('makes at most 2 attempts (main then fallback) on rate limit', async () => {
+    vi.mocked(getEnv).mockReturnValue({
+      GEMINI_API_KEY: 'test-key',
+      OPENROUTER_API_KEY: undefined,
+      GEMINI_MODEL: 'gemini-test',
+      OPENROUTER_MODEL: 'openrouter/free',
+      GEMINI_FALLBACK_MODEL: 'gemini-fallback',
+      FORCE_DEMO_MODE: false,
+    });
+
+    const error429 = new Error('Rate limit');
+    (error429 as Error & { status?: number }).status = 429;
+
+    mockGenerateContent.mockRejectedValue(error429);
+
+    const client = new GeminiClient();
+    const promise = client.generateSpec('prompt').catch((e: unknown) => e);
+
+    await vi.runAllTimersAsync();
+
+    const err = await promise;
+    expect(err).toBeInstanceOf(GeminiError);
+    expect((err as GeminiError).message).toBe('Max retries exceeded');
+    expect(mockGenerateContent).toHaveBeenCalledTimes(2);
   });
 
   it('throws quota error immediately without retrying on quota exhausted', async () => {
@@ -137,5 +163,11 @@ describe('GeminiClient', () => {
     const err = await promise;
     expect(err).toBeInstanceOf(GeminiError);
     expect((err as GeminiError).reason).toBe('timeout');
+
+    expect(mockGenerateContent).toHaveBeenCalledWith(
+      expect.anything(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
   });
 });

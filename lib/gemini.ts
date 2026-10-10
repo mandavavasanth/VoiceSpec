@@ -224,11 +224,14 @@ export class GeminiClient implements IGeminiClient {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const response = await Promise.race([
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-          this.ai.models.generateContent({
-            model: modelToUse,
-            contents: currentPrompt,
-            config,
-          }),
+          this.ai.models.generateContent(
+            {
+              model: modelToUse,
+              contents: currentPrompt,
+              config,
+            },
+            { signal: abortController.signal },
+          ),
           timeoutPromise,
         ]);
 
@@ -267,7 +270,8 @@ export class GeminiClient implements IGeminiClient {
           if (
             message.includes('quota exceeded') ||
             message.includes('quota limits') ||
-            message.includes('resource_exhausted')
+            message.includes('resource_exhausted') ||
+            message.includes('quota')
           ) {
             throw new GeminiError('quota', 'API quota exhausted');
           }
@@ -282,7 +286,6 @@ export class GeminiClient implements IGeminiClient {
     };
 
     let modelToUse = this.mainModelName;
-    let fallbackAttempted = false;
 
     while (Date.now() - startTime < GLOBAL_DEADLINE_MS) {
       attempt++;
@@ -320,25 +323,30 @@ export class GeminiClient implements IGeminiClient {
           lastErrorReason = 'unknown';
         }
 
+        if (attempt >= 2) {
+          throw new GeminiError(lastErrorReason, 'Max retries exceeded');
+        }
+
         // Check if we have time for retry
         const elapsed = Date.now() - startTime;
         if (elapsed >= GLOBAL_DEADLINE_MS) {
           throw new GeminiError(lastErrorReason, 'Global deadline exceeded');
         }
 
-        // Exponential backoff + jitter for 429 / 5xx
-        if (lastErrorReason === 'rate-limit' || lastErrorReason === 'unknown') {
-          if (attempt > 2 || fallbackAttempted) {
-            if (modelToUse === this.mainModelName && this.fallbackModelName) {
-              modelToUse = this.fallbackModelName;
-              fallbackAttempted = true;
-              // Reset attempt count for the fallback try so it gets 1 attempt (which might repair if needed, but attempt counter will be 3+, meaning it won't repair. Prompt says "try the fallback model once")
-            } else {
-              throw new GeminiError(lastErrorReason, 'Max retries exceeded');
-            }
+        if (
+          lastErrorReason === 'rate-limit' ||
+          lastErrorReason === 'unknown' ||
+          lastErrorReason === 'timeout'
+        ) {
+          if (modelToUse === this.mainModelName && this.fallbackModelName) {
+            modelToUse = this.fallbackModelName;
           } else {
-            const delay = Math.pow(2, attempt) * 500 + Math.random() * 200;
-            await new Promise((resolve) => setTimeout(resolve, delay));
+            // Already on fallback or no fallback exists, and we cap at 2 attempts total
+            // Since attempt is 1, and we don't switch model, wait and retry.
+            // Wait, the prompt says: "if it fails with a temporary overload or a short rate limit, make one request on the fallback model if configured, not another retry on the same model"
+            if (modelToUse === this.mainModelName && !this.fallbackModelName) {
+              throw new GeminiError(lastErrorReason, 'Rate limited and no fallback available');
+            }
           }
         }
       }
