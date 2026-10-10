@@ -8,7 +8,7 @@ import { buildEvidenceIndex, getHighlightPriority } from '@/lib/evidence-index';
 import { ProgressStages } from '@/components/ProgressStages';
 import { isDictationBurst } from '@/lib/ui-utils';
 import { BorderBeam } from 'border-beam';
-import { ThinkingOrb } from 'thinking-orbs';
+import { Loader2 } from 'lucide-react';
 
 export function TranscriptPane() {
   const {
@@ -319,13 +319,8 @@ export function TranscriptPane() {
             >
               {isGenerating ? (
                 <>
-                  <span className="relative z-10 flex items-center justify-center">
-                    {!prefersReducedMotion ? (
-                      <ThinkingOrb state="working" size={20} />
-                    ) : (
-                      currentStage || 'Generating...'
-                    )}
-                  </span>
+                  {!prefersReducedMotion && <Loader2 className="w-5 h-5 animate-spin mr-2" />}
+                  {currentStage || 'Generating...'}
                   <div
                     className="absolute bottom-0 left-0 h-[2px] bg-white/40 transition-all duration-300 ease-out"
                     style={{
