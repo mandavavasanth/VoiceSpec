@@ -25,6 +25,7 @@ describe('GeminiClient', () => {
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: 'test-key',
       GEMINI_MODEL: 'gemini-test',
+      GEMINI_FALLBACK_MODEL: 'gemini-3.1-flash-lite',
       FORCE_DEMO_MODE: false,
     });
     vi.mocked(isGeminiAvailable).mockReturnValue(true);
@@ -88,6 +89,12 @@ describe('GeminiClient', () => {
   });
 
   it('throws rate-limit immediately without fallback on 429', async () => {
+    vi.mocked(getEnv).mockReturnValue({
+      GEMINI_API_KEY: 'test-key',
+      GEMINI_MODEL: 'gemini-test',
+      GEMINI_FALLBACK_MODEL: '',
+      FORCE_DEMO_MODE: false,
+    });
     const error429 = new Error('Rate limit');
     (error429 as Error & { status?: number }).status = 429;
 

@@ -23,6 +23,7 @@ describe('Pipeline Integration', () => {
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: '',
       GEMINI_MODEL: 'gemini-3.6-flash',
+      GEMINI_FALLBACK_MODEL: 'gemini-3.1-flash-lite',
       FORCE_DEMO_MODE: false,
     });
     const { getMode } = await import('@/lib/env');
