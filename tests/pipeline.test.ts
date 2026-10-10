@@ -72,14 +72,10 @@ describe('runPipeline', () => {
     expect(result.metrics.droppedEvidence).toBe(0);
   });
 
-  it('uses fallback model when main model fails twice with rate limit', async () => {
+  it('uses fallback model when main model fails once with rate limit', async () => {
     // 1st attempt fails with 503
     mockGenerateContent.mockRejectedValueOnce({ status: 503 });
-    // 2nd attempt fails with 503
-    mockGenerateContent.mockRejectedValueOnce({ status: 503 });
-    // 3rd attempt fails with 503
-    mockGenerateContent.mockRejectedValueOnce({ status: 503 });
-    // 4th attempt (fallback model) succeeds
+    // 2nd attempt (fallback model) succeeds
     mockGenerateContent.mockResolvedValueOnce({
       text: JSON.stringify({
         title: 'Mocked Spec',
@@ -127,7 +123,7 @@ describe('runPipeline', () => {
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: 'test-key',
       GEMINI_MODEL: 'gemini-3.6-flash',
-      GEMINI_FALLBACK_MODEL: undefined,
+      GEMINI_FALLBACK_MODEL: '',
       FORCE_DEMO_MODE: false,
     });
     mockGenerateContent.mockRejectedValue({ status: 503 }); // Always fail
@@ -136,7 +132,7 @@ describe('runPipeline', () => {
     const result = await runPipeline(transcript, '127.0.0.1');
 
     expect(result.mode).toBe('fallback');
-    expect(mockGenerateContent).toHaveBeenCalledTimes(3); // 3 attempts on main model only
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1); // 1 attempt on main model only
   });
 
   it('global deadline wins over everything', { timeout: 35000 }, async () => {
@@ -157,6 +153,7 @@ describe('runPipeline', () => {
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: '',
       GEMINI_MODEL: 'gemini-3.6-flash',
+      GEMINI_FALLBACK_MODEL: 'gemini-3.1-flash-lite',
       FORCE_DEMO_MODE: false,
     });
 
@@ -175,6 +172,7 @@ describe('runPipeline', () => {
     vi.mocked(getEnv).mockReturnValue({
       GEMINI_API_KEY: 'test-key',
       GEMINI_MODEL: 'gemini-3.6-flash',
+      GEMINI_FALLBACK_MODEL: 'gemini-3.1-flash-lite',
       FORCE_DEMO_MODE: true, // This flag skips the network call
     });
 

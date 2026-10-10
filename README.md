@@ -110,6 +110,12 @@ graph TD
 - **Streaming JSON**: The API yields progress through stage events and then returns a final structured result, so the user sees progress updates during the generation wait.
 - **Resilience**: The pipeline will always output a valid spec. If the Gemini API is down, rate-limited, or if the user exhausts their free quota, the application automatically falls back to a deterministic "Demo Mode".
 
+## Third-party libraries
+
+- **border-beam** (v1.4.1) - MIT License
+- **thinking-orbs** (v0.3.2) - MIT License
+- **cn** - A utility from shadcn/ui for merging Tailwind classes safely.
+
 ## Security Notes
 
 - **Content Security Policy**: The application uses an `unsafe-inline` script policy. This is currently required by Next.js in development and for certain hydration mechanisms, though it is a known tradeoff.
@@ -117,7 +123,7 @@ graph TD
 
 ## Limitations
 
-- **Gemini Free Quota**: Because this app relies on the free tier of the Gemini API, heavy usage may result in a `429 Quota Exhausted` error. When this happens, the app will gracefully degrade to Demo Mode output.
+- **Gemini Free Quota**: Because this app relies on the free tier of the Gemini API, heavy usage may result in a `429 Quota Exhausted` error. When this happens, the app will gracefully degrade to Demo Mode output. The pipeline uses at most 2 Gemini requests per generation (one primary, one fallback or retry) to minimize quota burn.
 - **Capacity Issues**: 503 errors from overloaded Google servers are handled via a fallback model and retries, but if all attempts fail, it will also fall back to Demo Mode.
 - **Rate Limiting**: An in-memory sliding window rate limiter is used per-instance (10 requests per minute). In a serverless environment like Vercel, this is per-lambda-instance, not global.
 - **Length Limit**: Transcripts are capped at 20,000 characters to fit well within the context window and typical processing times.
