@@ -193,10 +193,10 @@ export function TranscriptPane() {
               colorVariant="ocean"
               strength={0.6}
               size="line"
-              style={{ borderRadius: 14, display: 'flex', flexDirection: 'column', flexGrow: 1 }}
+              style={{ borderRadius: 24, display: 'flex', flexDirection: 'column', flexGrow: 1 }}
             >
-              <div className="flex flex-col flex-grow relative overflow-hidden rounded-sheet h-full w-full">
-                <div className="absolute inset-0 bg-sheet rounded-sheet shadow-sheet pointer-events-none" />
+              <div className="flex flex-col flex-grow relative overflow-hidden rounded-3xl h-full w-full">
+                <div className="absolute inset-0 bg-sheet rounded-3xl shadow-sheet pointer-events-none" />
                 {burstKey > 0 && (
                   <div
                     key={burstKey}
@@ -210,7 +210,7 @@ export function TranscriptPane() {
                   }}
                   onKeyDown={handleKeyDown}
                   placeholder="Press the Wispr Flow key and talk..."
-                  className="relative z-10 flex-grow resize-none font-newsreader text-[18px] leading-[1.7] max-w-[68ch] mx-auto p-6 md:p-8 bg-transparent border-none focus-visible:ring-0 shadow-none"
+                  className="relative z-10 flex-grow resize-none font-newsreader text-[18px] leading-[1.7] w-full p-6 md:p-8 bg-transparent border-none focus-visible:ring-0 shadow-none"
                   disabled={isGenerating}
                 />
                 {charCount > 0 && (
@@ -222,9 +222,9 @@ export function TranscriptPane() {
             </BorderBeam>
           ) : (
             <div
-              className={`flex flex-col flex-grow relative overflow-hidden rounded-sheet ${isGenerating && prefersReducedMotion ? 'ring-2 ring-signal ring-offset-2' : ''}`}
+              className={`flex flex-col flex-grow relative overflow-hidden rounded-3xl ${isGenerating && prefersReducedMotion ? 'ring-2 ring-signal ring-offset-2' : ''}`}
             >
-              <div className="absolute inset-0 bg-sheet rounded-sheet shadow-sheet pointer-events-none" />
+              <div className="absolute inset-0 bg-sheet rounded-3xl shadow-sheet pointer-events-none" />
               {burstKey > 0 && (
                 <div
                   key={burstKey}
@@ -238,7 +238,7 @@ export function TranscriptPane() {
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder="Press the Wispr Flow key and talk..."
-                className="relative z-10 flex-grow resize-none font-newsreader text-[18px] leading-[1.7] max-w-[68ch] mx-auto p-6 md:p-8 bg-transparent border-none focus-visible:ring-0 shadow-none"
+                className="relative z-10 flex-grow resize-none font-newsreader text-[18px] leading-[1.7] w-full p-6 md:p-8 bg-transparent border-none focus-visible:ring-0 shadow-none"
                 disabled={isGenerating}
               />
               {charCount > 0 && (
@@ -249,9 +249,9 @@ export function TranscriptPane() {
             </div>
           )
         ) : (
-          <div className="flex-grow relative bg-sheet rounded-sheet shadow-sheet overflow-y-auto">
+          <div className="flex-grow relative bg-sheet rounded-3xl shadow-sheet overflow-y-auto">
             <div
-              className="font-newsreader text-[18px] leading-[1.7] max-w-[68ch] mx-auto p-6 md:p-8 outline-none"
+              className="font-newsreader text-[18px] leading-[1.7] w-full p-6 md:p-8 outline-none"
               tabIndex={0}
               role="group"
               aria-label="Transcript Sentences"
