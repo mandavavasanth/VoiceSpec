@@ -114,7 +114,6 @@ graph TD
 
 - **border-beam** (v1.4.1) - MIT License
 - **thinking-orbs** (v0.3.2) - MIT License
-- **metal-fx** (v2.0.11) - MIT License
 - **cn** - A utility from shadcn/ui for merging Tailwind classes safely.
 
 ## Security Notes
